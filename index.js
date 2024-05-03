@@ -3,7 +3,9 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
-const userRoutes=require("./routes/user.route.js");
+const userRoutes = require("./routes/user.route.js");
+const itemCategoryRoutes = require("./routes/itemCategory.route.js");
+const item = require("./routes/item.route.js");
 const app = express();
 
 //middleware
@@ -13,10 +15,10 @@ app.use(express.urlencoded({ extended: false }));
 // configuration file
 dotenv.config();
 
-
 // routes
 app.use("/api/users", userRoutes);
-
+app.use("/api/itemCategorys", itemCategoryRoutes);
+app.use("/api/items", item);
 
 // Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;
@@ -26,9 +28,10 @@ mongoose
   )
   .then(() => {
     app.listen(PORT, () => {
-      console.log("Connected to database!");
       console.log(`Server is running on port ${PORT} ..`);
     });
+    console.log("Connected to database!");
+
   })
   .catch((error) => {
     console.log("Connection failed!", error);
@@ -38,7 +41,6 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Hello from Node Api the server is included");
 });
-
 
 // this below function are help for JWT token authentication and verification
 app.post("/api/generateToken", async (req, res) => {
