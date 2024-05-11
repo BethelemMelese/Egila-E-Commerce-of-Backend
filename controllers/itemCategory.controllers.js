@@ -1,8 +1,9 @@
+const Item = require("../models/item.model.js");
 const ItemCategory = require("../models/itemCategory.model.js");
 
 const getItemCategorys = async (req, res) => {
   try {
-    const itemCategory = await ItemCategory.find({});
+    const itemCategory = await ItemCategory.find().populate("itemIds");
     res.status(200).json(itemCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -12,7 +13,8 @@ const getItemCategorys = async (req, res) => {
 const getItemCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const itemCategory = await ItemCategory.findById(id);
+    const itemCategory = await ItemCategory.findById(id).populate("itemIds");
+
     res.status(200).json(itemCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -38,7 +40,7 @@ const updateItemCategory = async (req, res) => {
       return res.status(404).json({ message: "Item Category not Found !" });
     }
 
-    const updatedItemCategory = await itemCategory.findById(id);
+    const updatedItemCategory = await ItemCategory.findById(id);
     res.status(200).json(updatedItemCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -65,5 +67,5 @@ module.exports = {
   getItemCategory,
   createItemCategory,
   updateItemCategory,
-  deleteItemCategory
+  deleteItemCategory,
 };

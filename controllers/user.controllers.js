@@ -1,4 +1,10 @@
 const User = require("../models/user.model.js");
+const Item = require("../models/item.model.js");
+const bcrypt = require("bcryptjs");
+const dotenv = require("dotenv");
+
+// configuration file
+dotenv.config();
 
 const getUsers = async (req, res) => {
   try {
@@ -13,20 +19,95 @@ const getUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
-    console.log("The Find Add result is:", user);
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+const getUserByUserName = async (req, res) => {
+  try {
+    const userName = req.params.username;
+    const user = await User.FindOne({ userName }).populate("profileIds");
+    if (!user) {
+      return res.status(404).json({ message: "The User is not Found !" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error, message });
+  }
+};
+
+const loginUser = async (req, res) => {
+  try {
+    console.log("req.body...",req.body);
+    const userName = req.body.userName;
+    const usernameValid = await User.FindOne({ userName });
+    console.log("usernameValid..", usernameValid);
+    if (!usernameValid) {
+      return res
+        .status(404)
+        .json({ message: "The User is not Found, Please insert correctly !" });
+    }
+
+    const passwordHash = await bcrypt.hash(req.body.password, HashKey);
+    const passwordvalid = await User.FindOne({ passwordHash });
+    console.log("passwordvalid..", passwordvalid);
+
+    if (passwordvalid) {
+      return res.status(200).json({ message: "User is Successfully Login !" });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "The User is not Found, Please insert correctly !" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error, message });
+  }
+};
+
+const logOutUser = async (req, res) => {
+  try {
+  } catch (error) {
+    res.status(500).json({ message: error, message });
+  }
+};
+
+const generateToken = async (req, res) => {
+  try {
+    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    let data = {
+      time: Date(),
+      userId: 12,
+    };
+
+    const token = await jwt.sign(data, jwtSecretKey);
+    res.send(token);
+  } catch (error) {
+    res.status(500).json({ message: error, message });
+  }
+};
+
+const verificationToken = async (req, res) => {
+  try {
+    let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
+    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    const token = req.header(tokenHeaderKey);
+    const verified = jwt.verify(token, jwtSecretKey);
+    if (verified) {
+      return res.status(200).send("Successfully Verified !");
+    } else {
+      return res.status(401).send("Something is Wrong !");
+    }
+  } catch (error) {
+    res.status(500).json({ message: error, message });
+  }
+};
+
 const createUser = async (req, res) => {
   try {
-    // const {get} = req.body;
-    // get.fullName= get.firstName + "" + get.lastName;
-    // console.log("get...",get)
     const user = await User.create(req.body);
-
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -67,7 +148,12 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getUsers,
   getUser,
+  getUserByUserName,
+  loginUser,
+  logOutUser,
+  generateToken,
+  verificationToken,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
 };

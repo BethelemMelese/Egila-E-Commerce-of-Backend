@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const userRoutes = require("./routes/user.route.js");
 const itemCategoryRoutes = require("./routes/itemCategory.route.js");
 const item = require("./routes/item.route.js");
+const userProfile=require("./routes/userProfile.route.js");
 const app = express();
 
 //middleware
@@ -19,6 +20,8 @@ dotenv.config();
 app.use("/api/users", userRoutes);
 app.use("/api/itemCategorys", itemCategoryRoutes);
 app.use("/api/items", item);
+app.use("/api/userProfiles", userProfile);
+
 
 // Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;

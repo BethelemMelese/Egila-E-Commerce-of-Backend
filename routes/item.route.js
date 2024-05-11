@@ -3,15 +3,15 @@ const router = express.Router();
 const {
   createItem,
   deleteItem,
-  getItem,
+  getItemById,
   getItemByCategoryId,
   getItems,
   updateItem,
 } = require("../controllers/item.controllers");
 
 router.get("/", getItems);
-router.get("/:id", getItem);
-router.get("/:categoryId", getItemByCategoryId);
+router.get("/:id", getItemById);
+router.get("/categoryId/:categoryId", getItemByCategoryId);
 router.post("/", createItem);
 router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);

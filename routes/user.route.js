@@ -3,6 +3,11 @@ const router = express.Router();
 const {
   getUsers,
   getUser,
+  getUserByUserName,
+  loginUser,
+  logOutUser,
+  generateToken,
+  verificationToken,
   deleteUser,
   createUser,
   updateUser,
@@ -10,6 +15,11 @@ const {
 
 router.get("/", getUsers);
 router.get("/:id", getUser);
+router.get("/", getUserByUserName);
+router.post("/login", loginUser);
+router.post("/logout", logOutUser);
+router.post("/generateToken", generateToken);
+router.post("/validateToken", verificationToken);
 router.post("/", createUser);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
