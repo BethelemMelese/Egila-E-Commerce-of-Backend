@@ -3,33 +3,27 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
-const User = require("./models/user.model.js");
+const userRoutes = require("./routes/user.route.js");
+const itemCategoryRoutes = require("./routes/itemCategory.route.js");
+const item = require("./routes/item.route.js");
+const userProfile=require("./routes/userProfile.route.js");
 const app = express();
+
+//middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// configuration file
 dotenv.config();
 
-app.get("/", (req, res) => {
-  res.send("Hello from Node Api the server is included");
-});
+// routes
+app.use("/api/users", userRoutes);
+app.use("/api/itemCategorys", itemCategoryRoutes);
+app.use("/api/items", item);
+app.use("/api/userProfiles", userProfile);
 
-app.post("/api/users", async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-app.get("/api/users", async (req, res) => {
-  try {
-    const user = await User.find({});
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
+// Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;
 mongoose
   .connect(
@@ -40,12 +34,19 @@ mongoose
       console.log(`Server is running on port ${PORT} ..`);
     });
     console.log("Connected to database!");
+
   })
   .catch((error) => {
     console.log("Connection failed!", error);
   });
 
-app.post("/api/generateTOken", async (req, res) => {
+// the below are a await function for difference end point with their conditions
+app.get("/", (req, res) => {
+  res.send("Hello from Node Api the server is included");
+});
+
+// this below function are help for JWT token authentication and verification
+app.post("/api/generateToken", async (req, res) => {
   try {
     let jwtSecretKey = process.env.JWT_SECRET_KEY;
     let data = {
