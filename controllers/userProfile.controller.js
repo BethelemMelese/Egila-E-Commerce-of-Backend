@@ -28,10 +28,10 @@ const getUserProfileById = async (req, res) => {
   }
 };
 
-let HashKey = process.env.BCRYPT_SALT_ROUNDS
+
 const createUserProfile = async (req, res) => {
   try {
-    const data = {
+    const userProfile = await UserProfile.create({
       firstName: req.body.firstName,
       middleName: req.body.middleName,
       lastName: req.body.lastName,
@@ -43,24 +43,37 @@ const createUserProfile = async (req, res) => {
         req.body.middleName +
         " " +
         req.body.lastName,
-    };
-    const userProfile = await UserProfile.create(data);
+    });
 
-    const currentDate = new Date();
-    const passwordHash = await bcrypt.hash(
-      req.body.password,
-      HashKey
+    const passwordHash = bcrypt.hash(req.body.password, process.env.BCRYPT_SALT_ROUNDS);
+    const token = await jwt.sign(
+      {
+        id: userProfile._id,
+        time: Date(),
+        name:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        email: req.body.email,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: 3600000,
+      }
     );
-    const userDate = {
-      username: req.body.username,
-      password: req.body.password,
-      profileIds: userProfile._id,
-      passwordHash: passwordHash,
-      registrationDate: currentDate,
-    };
+    console.log("token...", token);
 
-    const user = await User.create(userDate);
-    const result = {
+    const user = await User.create({
+      username: req.body.username,
+      profileIds: userProfile._id,
+      token: token,
+      passwordHash: passwordHash,
+      registrationDate: Date(),
+    });
+
+    res.status(200).json({
       firstName: userProfile.firstName,
       middleName: userProfile.middleName,
       lastName: userProfile.lastName,
@@ -72,11 +85,8 @@ const createUserProfile = async (req, res) => {
       profileIds: user.profileIds,
       passwordHash: user.passwordHash,
       registrationDate: user.registrationDate,
-    };
-
-    res.status(200).json(result);
+    });
   } catch (error) {
-    console.log("error.message...", error.message);
     res.status(500).json({ message: error.message });
   }
 };

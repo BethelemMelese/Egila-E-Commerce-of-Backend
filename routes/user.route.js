@@ -4,6 +4,7 @@ const {
   getUsers,
   getUser,
   getUserByUserName,
+  getUserByRoleId,
   loginUser,
   logOutUser,
   generateToken,
@@ -16,6 +17,7 @@ const {
 router.get("/", getUsers);
 router.get("/:id", getUser);
 router.get("/", getUserByUserName);
+router.get("/roleId/:id",getUserByRoleId);
 router.post("/login", loginUser);
 router.post("/logout", logOutUser);
 router.post("/generateToken", generateToken);

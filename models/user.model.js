@@ -2,15 +2,42 @@ const mongoose = require("mongoose");
 
 const UserSchema = mongoose.Schema(
   {
+    firstName: {
+      type: String,
+      required: [true, "Please insert First Name"],
+    },
+    middleName: {
+      type: String,
+      required: [true, "Please insert middle Name"],
+    },
+    lastName: {
+      type: String,
+      required: false,
+    },
+    fullName: {
+      type: String,
+      required: [true, "Please insert Full Name"],
+    },
+    phone: {
+      type: String,
+      required: [true, "Please insert Phone Number"],
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     username: {
       type: String,
-      required: [true, "please enter first name"],
-    },
-    password: {
-      type: String,
-      required: [true, "please enter password"],
+      required: [true, "please insert username"],
+      unique: true,
     },
     passwordHash: {
+      type: String,
+      required: true,
+    },
+    token: {
       type: String,
       required: true,
     },
@@ -18,10 +45,7 @@ const UserSchema = mongoose.Schema(
       type: Date,
       required: false,
     },
-    profileIds: [{ type: mongoose.Types.ObjectId, ref: "UserProfile",required: false, }],
-    // for Many to Many relationship the attribute has to be defined on both models just like in User,
-    // In the item also has object list of items.
-    itemIds: [{ type: mongoose.Types.ObjectId, ref: "Item",required: false, }],
+    roleIds: [{ type: mongoose.Types.ObjectId, ref: "Role", required: false }],
   },
   {
     timestamps: true,

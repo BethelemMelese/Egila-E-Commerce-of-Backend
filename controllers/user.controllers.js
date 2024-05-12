@@ -1,6 +1,6 @@
 const User = require("../models/user.model.js");
-const Item = require("../models/item.model.js");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
 // configuration file
@@ -28,39 +28,56 @@ const getUser = async (req, res) => {
 const getUserByUserName = async (req, res) => {
   try {
     const userName = req.params.username;
-    const user = await User.FindOne({ userName }).populate("profileIds");
+    const user = await User.findOne({ userName }).populate("roleIds");
     if (!user) {
       return res.status(404).json({ message: "The User is not Found !" });
     }
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error, message });
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getUserByRoleId = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const user = await User.findOne({ roleIds: id }).populate("roleIds");
+    if (!user) {
+      return res.status(404).json({ message: "The User is not Found !" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
 const loginUser = async (req, res) => {
   try {
-    console.log("req.body...",req.body);
-    const userName = req.body.userName;
-    const usernameValid = await User.FindOne({ userName });
-    console.log("usernameValid..", usernameValid);
-    if (!usernameValid) {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    console.log("user...",user);
+    if (!user) {
       return res
         .status(404)
         .json({ message: "The User is not Found, Please insert correctly !" });
     }
 
-    const passwordHash = await bcrypt.hash(req.body.password, HashKey);
-    const passwordvalid = await User.FindOne({ passwordHash });
-    console.log("passwordvalid..", passwordvalid);
-
-    if (passwordvalid) {
-      return res.status(200).json({ message: "User is Successfully Login !" });
+    const isPasswordMatch = bcrypt.compare(password, user.passwordHash);
+    if (user && isPasswordMatch) {
+      res.status(200).json({
+        message: "Login is Successfully Done !",
+        token: user.token,
+      });
+    } else if (!isPasswordMatch) {
+      res.status(401).json({
+        message: "The User is not Found, Please insert correctly !",
+      });
     } else {
-      return res
-        .status(404)
-        .json({ message: "The User is not Found, Please insert correctly !" });
+      res.status(404).json({
+        error: "The User is not Found, Please insert correctly !",
+      });
     }
   } catch (error) {
     res.status(500).json({ message: error, message });
@@ -149,6 +166,7 @@ module.exports = {
   getUsers,
   getUser,
   getUserByUserName,
+  getUserByRoleId,
   loginUser,
   logOutUser,
   generateToken,

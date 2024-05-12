@@ -4,12 +4,12 @@ const ItemCategorySchema = mongoose.Schema(
   {
     categoryName: {
       type: String,
-      required: [true, "please enter Category Name"],
+      required: [true, "please insert Category Name"],
       unique: true,
     },
     categoryDescription: {
       type: String,
-      required: [true, "please enter Category Description"],
+      required:false,
     },
     itemIds: [
       {

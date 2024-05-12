@@ -1,0 +1,190 @@
+const Customer = require("../models/customer.model.js");
+const User = require("../models/user.model.js");
+const Role = require("../models/role.model.js");
+const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+// configuration file
+dotenv.config();
+
+const getCustomers = async (req, res) => {
+  try {
+    const customer = await Customer.find();
+
+    const result = customer.map((value) => {
+      return value.userId;
+    });
+    const user = await User.findById(result);
+    const role = await Role.findById(user.roleIds);
+    const response = customer.map((value) => {
+      return {
+        id: value._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        token: user.token,
+        userId: user._id,
+        registrationDate: user.registrationDate,
+        address: value.address,
+        subCity: value.subCity,
+        town: value.town,
+        roleId: role._id,
+        roleName: role.roleName,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getCustomerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({ message: "Customer is not Found !" });
+    }
+    const user = await User.findById(customer.userId);
+    const role = await Role.findById(user.roleIds);
+    res.status(200).json({
+      id: customer._id,
+      firstName: user.firstName,
+      middleName: user.middleName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      phone: user.phone,
+      email: user.email,
+      token: user.token,
+      userId: user._id,
+      registrationDate: user.registrationDate,
+      address: customer.address,
+      subCity: customer.subCity,
+      town: customer.town,
+      roleId: role._id,
+      roleName: role.roleName,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const createCustomer = async (req, res) => {
+  try {
+    const role = await Role.findById(req.body.roleId);
+    const existCustomer = await Customer.findOne({
+      email: req.body.email,
+      phone: req.body.phone,
+      username: req.body.username,
+    });
+
+    if (existCustomer != null) {
+      return res.status(500).json({
+        message: "Customer is already exist !",
+      });
+    } else {
+      const generateToken = await jwt.sign(
+        {
+          time: Date(),
+          name:
+            req.body.firstName +
+            " " +
+            req.body.middleName +
+            " " +
+            req.body.lastName,
+          email: req.body.email,
+          roleId: role._id,
+          roleName: role.roleName,
+        },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: 3600000,
+        }
+      );
+
+      const saltRounds = 10;
+      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const user = await User.create({
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+        username: req.body.username,
+        passwordHash: password,
+        token: generateToken,
+        registrationDate: Date(),
+        roleIds: req.body.roleId,
+      });
+
+      const customer = await Customer.create({
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+        userId: user._id,
+      });
+
+      res.status(200).json({
+        id: customer._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        registrationDate: user.registrationDate,
+        address: customer.address,
+        subCity: customer.subCity,
+        town: customer.town,
+        roleId: role._id,
+        roleName: role.roleName,
+        userId: customer.userId,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateCustomer = async (req, res) => {
+  try {
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+
+    if (!customer) {
+      return res.status(404).json({ message: "Customer is not Found !" });
+    }
+
+    await User.findByIdAndDelete(customer.userId);
+    await Customer.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Customer Deleted Successfully !" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  getCustomers,
+  getCustomerById,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+};

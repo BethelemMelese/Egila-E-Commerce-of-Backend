@@ -4,21 +4,42 @@ const ItemSchema = mongoose.Schema(
   {
     itemName: {
       type: String,
-      required: [true, "please enter Item Name"],
+      required: [true, "please insert Item Name"],
       unique: true,
     },
     itemDescription: {
       type: String,
-      required: [true, "please enter Item Description"],
+      required: false,
     },
     quantity: {
       type: Number,
       required: true,
     },
-    // for Many to Many relationship the attribute has to be defined on both models just like in Item,
-    // In the user also has object list of items.
-    users: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+    price: {
+      type: Number,
+      required: true,
+    },
+    brand: {
+      type: String,
+      required: [true, "please insert Brand Name"],
+    },
+    image: {
+      type: String,
+      required: [true, "please insert image path"],
+    },
+    cartIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cart",
+        required: false,
+      },
+    ],
+    orderIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
+        required: false,
+      },
     ],
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,

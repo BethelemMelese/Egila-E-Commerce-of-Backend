@@ -3,20 +3,20 @@ const ItemCategory = require("../models/itemCategory.model.js");
 
 const getItems = async (req, res) => {
   try {
-    const item = await Item.find().populate("categoryId");
-    const response = await item.map((value) => {
-      const result = {
-        id: value._id,
-        itemName: value.itemName,
-        itemDescription: value.itemDescription,
-        quantity: value.quantity,
-        categoryId: value.categoryId._id,
-        categoryName: value.categoryId.categoryName,
-      };
+    const item = await Item.find();
+    // const response = await item.map((value) => {
+    //   const result = {
+    //     // id: value._id,
+    //     itemName: value.itemName,
+    //     itemDescription: value.itemDescription,
+    //     quantity: value.quantity,
+    //     categoryId: value.categoryId._id,
+    //     categoryName: value.categoryId.categoryName,
+    //   };
 
-      return result;
-    });
-    res.status(200).json(response);
+    //   return result;
+    // });
+    res.status(200).json(item);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -108,26 +108,34 @@ const updateItem = async (req, res) => {
 
     if (getItemValue.categoryId == req.body.categoryId) {
       const item = await Item.findByIdAndUpdate(id, req.body);
-      res.status(200).json(item);
+      res.status(200).json({
+        id: item._id,
+        itemName: item.itemName,
+        itemDescription: item.itemDescription,
+        quantity: item.quantity,
+        categoryId: item.categoryId,
+        categoryName: item.categoryName,
+      });
     } else {
       const item = await Item.findByIdAndUpdate(id, req.body);
       console.log("item..", item);
-      // await ItemCategory.deleteOne(
-      //   { _id:  },
-      //   { $set: { itemIds: [] } }
-      // );
-      // const itemCategory = await ItemCategory.findByIdAndUpdate(
-      //   req.body.categoryId,
-      //   {
-      //     itemIds: item._id,
-      //   }
-      // );
       const itemCategory = await ItemCategory.findByIdAndUpdate(
         { _id: req.body.categoryId },
-        { $push: { itemIds: [item._id] } }
-      ).then();
+        { $push: { itemIds: [id] } }
+      );
+
+      console.log("itemCategory..", itemCategory);
+
+      const check = await ItemCategory.findByIdAndUpdate(
+        { _id: getItemValue.categoryId },
+        { itemIds: [id] },
+        { $pull: { itemIds: [id] } }
+      );
+
+      console.log("check...", check);
 
       res.status(200).json({
+        id: item._id,
         itemName: item.itemName,
         itemDescription: item.itemDescription,
         quantity: item.quantity,

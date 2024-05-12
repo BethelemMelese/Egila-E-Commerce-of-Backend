@@ -15,7 +15,12 @@ const getItemCategory = async (req, res) => {
     const { id } = req.params;
     const itemCategory = await ItemCategory.findById(id).populate("itemIds");
 
-    res.status(200).json(itemCategory);
+    res.status(200).json({
+      id: itemCategory._id,
+      categoryName: itemCategory.categoryName,
+      categoryDescription: itemCategory.categoryDescription,
+      itemIds: itemCategory.itemIds,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -25,7 +30,12 @@ const createItemCategory = async (req, res) => {
   try {
     const itemCategory = await ItemCategory.create(req.body);
 
-    res.status(200).json(itemCategory);
+    res.status(200).json({
+      id: itemCategory._id,
+      categoryName: itemCategory.categoryName,
+      categoryDescription: itemCategory.categoryDescription,
+      itemIds: itemCategory.itemIds,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -41,7 +51,12 @@ const updateItemCategory = async (req, res) => {
     }
 
     const updatedItemCategory = await ItemCategory.findById(id);
-    res.status(200).json(updatedItemCategory);
+    res.status(200).json({
+      id: updatedItemCategory._id,
+      categoryName: updatedItemCategory.categoryName,
+      categoryDescription: updatedItemCategory.categoryDescription,
+      itemIds: updatedItemCategory.itemIds,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
