@@ -23,7 +23,7 @@ const ItemSchema = mongoose.Schema(
       type: String,
       required: [true, "please insert Brand Name"],
     },
-    image: {
+    itemImage: {
       type: String,
       required: [true, "please insert image path"],
     },

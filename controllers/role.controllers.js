@@ -1,9 +1,28 @@
 const Role = require("../models/role.model.js");
 
+const searchAndFilterRole = async (req, res) => {
+  try {
+    const search=req.query.search|| "";
+    const roles=await Role.find({roleName:{$regex:search,$options:"i"}});
+    const response = roles.map((value) => {
+      return {
+        id: value._id,
+        roleName: value.roleName,
+        roleDescription: value.roleDescription,
+        userIds: value.userIds,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getRoles = async (req, res) => {
   try {
-    const role = await Role.find().populate("userIds");
-    const response = role.map((value) => {
+    const search=req.query.search|| "";
+    const roles=await Role.find({roleName:{$regex:search,$options:"i"}}).populate("userIds");
+    const response = roles.map((value) => {
       return {
         id: value._id,
         roleName: value.roleName,
@@ -97,4 +116,5 @@ module.exports = {
   createRole,
   updateRole,
   deleteRole,
+  searchAndFilterRole,
 };

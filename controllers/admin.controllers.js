@@ -150,6 +150,46 @@ const createAdmin = async (req, res) => {
 
 const updateAdmin = async (req, res) => {
   try {
+    const { id } = req.params;
+    const admin = await Admin.findById(id);
+    if (admin == null) {
+      res.status(400).json({ message: "Admin not Exist !" });
+    } else {
+      const updateAdmin = await Admin.findByIdAndUpdate(admin._id, {
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+      });
+
+      const updateUser = await User.findByIdAndUpdate(admin.userId, {
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+      });
+
+      res.status(200).json({
+        id: admin._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        registrationDate: updateUser.registrationDate,
+        address: updateAdmin.address,
+        subCity: updateAdmin.subCity,
+        town: updateAdmin.town,
+        userId: updateAdmin.userId,
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

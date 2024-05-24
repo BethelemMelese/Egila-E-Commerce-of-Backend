@@ -150,6 +150,49 @@ const createDeliveryPerson = async (req, res) => {
 
 const updateDeliveryPerson = async (req, res) => {
   try {
+    const { id } = req.params;
+    const deliveryPerson = await DeliveryPerson.findById(id);
+    if (deliveryPerson == null) {
+      res.status(400).json({ message: "Delivery Person not Exist !" });
+    } else {
+      const updateDeliveryPerson = await DeliveryPerson.findByIdAndUpdate(
+        deliveryPerson._id,
+        {
+          address: req.body.address,
+          subCity: req.body.subCity,
+          town: req.body.town,
+        }
+      );
+
+      const updateUser = await User.findByIdAndUpdate(deliveryPerson.userId, {
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+      });
+
+      res.status(200).json({
+        id: deliveryPerson._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        registrationDate: updateUser.registrationDate,
+        address: updateDeliveryPerson.address,
+        subCity: updateDeliveryPerson.subCity,
+        town: updateDeliveryPerson.town,
+        userId: updateDeliveryPerson.userId,
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

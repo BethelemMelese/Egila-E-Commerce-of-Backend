@@ -45,6 +45,10 @@ const UserSchema = mongoose.Schema(
       type: Date,
       required: false,
     },
+    profileImage: {
+      type: String,
+      required: true,
+    },
     roleIds: [{ type: mongoose.Types.ObjectId, ref: "Role", required: false }],
   },
   {

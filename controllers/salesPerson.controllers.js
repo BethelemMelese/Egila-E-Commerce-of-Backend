@@ -150,6 +150,49 @@ const createSalesPerson = async (req, res) => {
 
 const updateSalesPerson = async (req, res) => {
   try {
+    const { id } = req.params;
+    const salesPerson = await SalesPerson.findById(id);
+    if (salesPerson == null) {
+      res.status(400).json({ message: "Sales Person not Exist !" });
+    } else {
+      const updateSalesPerson = await SalesPerson.findByIdAndUpdate(
+        salesPerson._id,
+        {
+          address: req.body.address,
+          subCity: req.body.subCity,
+          town: req.body.town,
+        }
+      );
+
+      const updateUser = await User.findByIdAndUpdate(salesPerson.userId, {
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+      });
+
+      res.status(200).json({
+        id: salesPerson._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        registrationDate: updateUser.registrationDate,
+        address: updateSalesPerson.address,
+        subCity: updateSalesPerson.subCity,
+        town: updateSalesPerson.town,
+        userId: updateSalesPerson.userId,
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

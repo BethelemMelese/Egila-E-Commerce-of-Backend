@@ -1,5 +1,9 @@
 const Item = require("../models/item.model.js");
 const ItemCategory = require("../models/itemCategory.model.js");
+const { Readable } = require("stream");
+const Grid = require("gridfs-stream");
+const multer = require("multer");
+const cors = require("cors");
 
 const getItemCategorys = async (req, res) => {
   try {
@@ -19,6 +23,7 @@ const getItemCategory = async (req, res) => {
       id: itemCategory._id,
       categoryName: itemCategory.categoryName,
       categoryDescription: itemCategory.categoryDescription,
+      categoryImages: itemCategory.categoryImages,
       itemIds: itemCategory.itemIds,
     });
   } catch (error) {
@@ -36,6 +41,22 @@ const createItemCategory = async (req, res) => {
       categoryDescription: itemCategory.categoryDescription,
       itemIds: itemCategory.itemIds,
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const uploadCategoryImage = async (req, res) => {
+  try {
+    console.log("req.body...", req.body);
+    console.log("req.categoryImage...", req);
+    res.status(500).json({message:"THe File is Received!"});
+    // const formData = {
+    //   categoryName: req.body.categoryName,
+    //   categoryDescription: req.body.categoryDescription,
+    //   categoryImages: req.files[0].originalname,
+    // };
+    // const itemCategory = await ItemCategory.create(formData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -81,6 +102,7 @@ module.exports = {
   getItemCategorys,
   getItemCategory,
   createItemCategory,
+  uploadCategoryImage,
   updateItemCategory,
   deleteItemCategory,
 };

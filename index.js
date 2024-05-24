@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -14,16 +15,29 @@ const salesPerson = require("./routes/salesPerson.route.js");
 const deliveryPerson = require("./routes/deliveryPerson.route.js");
 const app = express();
 
-//middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors()); // Allowing incoming request from any IP
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, 'Content-Type' : 'multipart/form-data' ,* "
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+  );
+  next();
+});
 
 // configuration file
 dotenv.config();
 
 // routes
 app.use("/api/users", userRoutes);
-app.use("/api/itemCategorys", itemCategoryRoutes);
+// app.use("/api/itemCategorys", itemCategoryRoutes);
 app.use("/api/items", item);
 app.use("/api/userProfiles", userProfile);
 app.use("/api/roles", role);

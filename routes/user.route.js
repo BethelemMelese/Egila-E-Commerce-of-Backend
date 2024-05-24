@@ -9,6 +9,7 @@ const {
   logOutUser,
   generateToken,
   verificationToken,
+  updatePassword,
   deleteUser,
   createUser,
   updateUser,
@@ -25,5 +26,6 @@ router.post("/validateToken", verificationToken);
 router.post("/", createUser);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
+router.put("/changePassword/:id",updatePassword);
 
 module.exports = router;

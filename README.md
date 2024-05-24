@@ -1,7 +1,7 @@
 # Simple-CRUD-Using-NodeJs-ExpressJs-MongoDB
 
   # In this Project we try to develop Backend side for Online Shopping System (Egila)
-  by using latest technology's which means Node Js with MongoDB for Database by using Javascript
+  by using latest technology's which means Node Js with MongoDB for Database by using Javascript,
      This project is well structure on the Document side and code 
 
      In this project we have main 3 folders such as models for database schema for MongoDB using mongoose, And 

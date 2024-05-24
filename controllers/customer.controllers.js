@@ -15,8 +15,8 @@ const getCustomers = async (req, res) => {
     const result = customer.map((value) => {
       return value.userId;
     });
-    const user = await User.findById(result);
-    const role = await Role.findById(user.roleIds);
+    const user = await User.findById(result).populate("roleIds");
+
     const response = customer.map((value) => {
       return {
         id: value._id,
@@ -32,8 +32,6 @@ const getCustomers = async (req, res) => {
         address: value.address,
         subCity: value.subCity,
         town: value.town,
-        roleId: role._id,
-        roleName: role.roleName,
       };
     });
     res.status(200).json(response);
@@ -158,6 +156,46 @@ const createCustomer = async (req, res) => {
 
 const updateCustomer = async (req, res) => {
   try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+    if (customer == null) {
+      res.status(400).json({ message: "Customer not Exist !" });
+    } else {
+      const updateCustomer = await Customer.findByIdAndUpdate(customer._id, {
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+      });
+
+      const updateUser = await User.findByIdAndUpdate(customer.userId, {
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+      });
+
+      res.status(200).json({
+        id: customer._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        registrationDate: updateUser.registrationDate,
+        address: updateCustomer.address,
+        subCity: updateCustomer.subCity,
+        town: updateCustomer.town,
+        userId: updateCustomer.userId,
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

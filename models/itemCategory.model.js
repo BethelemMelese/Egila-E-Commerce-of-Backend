@@ -9,8 +9,17 @@ const ItemCategorySchema = mongoose.Schema(
     },
     categoryDescription: {
       type: String,
-      required:false,
+      required: false,
     },
+    categoryImage: {
+      type: String,
+      required: [true, "please insert image path"],
+    },
+    //   {
+    //     data: Buffer,
+    //     contentType: String
+    // }
+    //
     itemIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
