@@ -37,7 +37,7 @@ dotenv.config();
 
 // routes
 app.use("/api/users", userRoutes);
-// app.use("/api/itemCategorys", itemCategoryRoutes);
+app.use("/api/itemCategorys", itemCategoryRoutes);
 app.use("/api/items", item);
 app.use("/api/userProfiles", userProfile);
 app.use("/api/roles", role);
@@ -67,3 +67,9 @@ app.get("/", (req, res) => {
   res.send("Hello from Node Api the server is included");
 });
 
+// When you need to retrieve the file later, you can use the stored file path to access the file from the file system.
+//  For example, you can serve the file using a route handler like this:
+app.get("/uploads/:filePath", (req, res) => {
+  const { filePath } = req.params;
+  res.sendFile(path.join(__dirname, "uploads", filePath));
+});

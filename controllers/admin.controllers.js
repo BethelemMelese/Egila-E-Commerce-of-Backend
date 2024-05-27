@@ -10,28 +10,38 @@ dotenv.config();
 
 const getAdmins = async (req, res) => {
   try {
-    const admin = await Admin.find();
+    const search = req.query.search || "";
 
-    const result = admin.map((value) => {
-      return value.userId;
-    });
-    const user = await User.findById(result);
-    const role = await Role.findById(user.roleIds);
+    const admin = await Admin.find({
+      $or: [
+        { address: { $regex: search, $options: "i" } },
+        { subCity: { $regex: search, $options: "i" } },
+      ],
+    })
+      .populate({
+        path: "userId",
+        $or: [
+          { fullName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+        select: "-__v", // Exclude the __v field
+      })
+      .select("-__v");
+
     const response = admin.map((value) => {
       return {
         id: value._id,
-        firstName: user.firstName,
-        middleName: user.middleName,
-        lastName: user.lastName,
-        fullName: user.fullName,
-        phone: user.phone,
-        email: user.email,
-        token: user.token,
-        userId: user._id,
-        registrationDate: user.registrationDate,
+        fullName: value.userId[0].fullName,
+        firstName: value.userId[0].firstName,
+        middleName: value.userId[0].middleName,
+        lastName: value.userId[0].lastName,
+        phone: value.userId[0].phone,
+        email: value.userId[0].email,
+        userId: value.userId[0]._id,
         address: value.address,
-        roleId: role._id,
-        roleName: role.roleName,
+        subCity: value.subCity,
+        town: value.town,
+        roleId: value.userId[0].roleIds,
       };
     });
     res.status(200).json(response);

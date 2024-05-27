@@ -325,22 +325,28 @@ const deleteUser = async (req, res) => {
 
 const updatePassword = async (req, res) => {
   try {
-    const { id, newPassword, oldPassword } = req.params;
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
     const user = await User.findById(id);
-    if (!user) {
+    if (user == null) {
       return res
         .status(404)
         .json({ message: "User is not Found, Please insert correctly !" });
     } else {
-      const isPasswordMatch = bcrypt.compareSync(oldPassword, user.passwordHash);
-       if(!isPasswordMatch){
-        return res
-        .status(404)
-        .json({ message: "The Old Password not Correct, please insert the old password correctly!" });
-       }
+      const isPasswordMatch = bcrypt.compareSync(
+        oldPassword,
+        user.passwordHash
+      );
+      if (!isPasswordMatch) {
+        return res.status(404).json({
+          message:
+            "The Old Password not Correct, please insert the old password correctly!",
+        });
+      }
       const saltRounds = 10;
-      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const password = bcrypt.hashSync(newPassword, saltRounds);
       const response = await User.updateOne({ passwordHash: password });
+      console.log("response...", response);
       res.status(200).json({ message: "Password is Successfully Updated !" });
     }
   } catch (error) {

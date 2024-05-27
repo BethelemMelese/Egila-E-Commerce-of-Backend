@@ -15,11 +15,6 @@ const ItemCategorySchema = mongoose.Schema(
       type: String,
       required: [true, "please insert image path"],
     },
-    //   {
-    //     data: Buffer,
-    //     contentType: String
-    // }
-    //
     itemIds: [
       {
         type: mongoose.Schema.Types.ObjectId,

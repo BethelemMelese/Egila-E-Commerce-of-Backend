@@ -9,26 +9,28 @@ const {
   getItemCategory,
   updateItemCategory,
   uploadCategoryImage,
+  downloadFile,
 } = require("../controllers/itemCategory.controllers");
 
-const uploads = multer({ dest: __dirname + "/uploads" });
+// Set up Multer storage configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, __dirname + "/uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-// var storage = multer.diskStorage({
-//   destination: (file, cb) => {
-//     cb(null, "uploads");
-//   },
-//   filename: (file, cb) => {
-//     cb(null, file.filename + "-" + Date.now());
-//   },
-// });
-
-// const upload=multer({storage:storage});
-
+// Initialize Multer with the storage configuration
+const upload = multer({ storage });
 router.get("/", getItemCategorys);
 router.get("/:id", getItemCategory);
-router.post("/", createItemCategory);
+router.post("/", upload.single("file"), createItemCategory);
 router.put("/:id", updateItemCategory);
 router.delete("/:id", deleteItemCategory);
-router.post("/uploads", uploads.array("categoryImage"), uploadCategoryImage);
+// The upload.single('file') middleware is used to handle the file upload
+router.post("/uploads", upload.single("file"), uploadCategoryImage);
+router.get("/uploads/:filePath", downloadFile);
 
 module.exports = router;

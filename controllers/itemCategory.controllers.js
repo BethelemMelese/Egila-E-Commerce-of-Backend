@@ -1,14 +1,29 @@
 const Item = require("../models/item.model.js");
 const ItemCategory = require("../models/itemCategory.model.js");
 const { Readable } = require("stream");
-const Grid = require("gridfs-stream");
-const multer = require("multer");
-const cors = require("cors");
+const dotenv = require("dotenv");
+const fs = require("fs");
+
+// configuration file
+dotenv.config();
 
 const getItemCategorys = async (req, res) => {
   try {
-    const itemCategory = await ItemCategory.find().populate("itemIds");
-    res.status(200).json(itemCategory);
+    const search = req.query.search || "";
+
+    const itemCategory = await ItemCategory.find({
+      categoryName: { $regex: search, $options: "i" },
+    }).populate("itemIds");
+    const response = itemCategory.map((value) => {
+      return {
+        id: value._id,
+        categoryName: value.categoryName,
+        categoryDescription: value.categoryDescription,
+        categoryImage: value.categoryImage,
+        itemIds: value.itemIds,
+      };
+    });
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -33,12 +48,18 @@ const getItemCategory = async (req, res) => {
 
 const createItemCategory = async (req, res) => {
   try {
-    const itemCategory = await ItemCategory.create(req.body);
+    const formData = {
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: req.file.filename,
+    };
+    const itemCategory = await ItemCategory.create(formData);
 
     res.status(200).json({
       id: itemCategory._id,
       categoryName: itemCategory.categoryName,
       categoryDescription: itemCategory.categoryDescription,
+      categoryImage: itemCategory.categoryImage,
       itemIds: itemCategory.itemIds,
     });
   } catch (error) {
@@ -48,15 +69,13 @@ const createItemCategory = async (req, res) => {
 
 const uploadCategoryImage = async (req, res) => {
   try {
-    console.log("req.body...", req.body);
-    console.log("req.categoryImage...", req);
-    res.status(500).json({message:"THe File is Received!"});
-    // const formData = {
-    //   categoryName: req.body.categoryName,
-    //   categoryDescription: req.body.categoryDescription,
-    //   categoryImages: req.files[0].originalname,
-    // };
-    // const itemCategory = await ItemCategory.create(formData);
+    const formData = {
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: req.file.filename,
+    };
+    const itemCategory = await ItemCategory.create(formData);
+    res.status(200).json(itemCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -68,7 +87,7 @@ const updateItemCategory = async (req, res) => {
     const itemCategory = await ItemCategory.findByIdAndUpdate(id, req.body);
 
     if (!itemCategory) {
-      return res.status(404).json({ message: "Item Category not Found !" });
+      return res.status(404).json({ message: "Category not Found !" });
     }
 
     const updatedItemCategory = await ItemCategory.findById(id);
@@ -86,13 +105,27 @@ const updateItemCategory = async (req, res) => {
 const deleteItemCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const itemCategory = await ItemCategory.findByIdAndDelete(id);
+    const path = process.env.FILE_PATH;
+    const itemCategory = await ItemCategory.findById(id);
 
     if (!itemCategory) {
-      return res.status(404).json({ message: "Item Category not Found !" });
+      return res.status(404).json({ message: "Category not Found !" });
     }
+    await itemCategory.deleteOne();
+    await fs.promises.unlink(path + itemCategory.categoryImage);
 
-    res.status(200).json({ message: "Item Category is Successfully Delete !" });
+    res.status(200).json({ message: "Category is Successfully Delete !" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const downloadFile = async (req, res) => {
+  try {
+    const { filePath } = req.params;
+    const path = process.env.FILE_PATH;
+    const response = path + filePath;
+    res.sendFile(response);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -103,6 +136,7 @@ module.exports = {
   getItemCategory,
   createItemCategory,
   uploadCategoryImage,
+  downloadFile,
   updateItemCategory,
   deleteItemCategory,
 };
