@@ -356,9 +356,6 @@ const updatePassword = async (req, res) => {
 const updateProfileImage = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const { profileImage } = req.body;
-
     const user = await User.findById(id);
 
     if (!user) {
@@ -366,7 +363,7 @@ const updateProfileImage = async (req, res) => {
     }
 
     const updateUserProfile = await User.findByIdAndUpdate(id, {
-      profileImage: profileImage,
+      profileImage: req.file.filename,
     });
 
     res.status(200).json({
@@ -489,7 +486,7 @@ const updateProfile = async (req, res) => {
         subCity: deliveryPerson.subCity,
         town: deliveryPerson.town,
       });
-    }else{
+    } else {
       res.status(200).json({
         id: updateUser._id,
         firstName: updateUser.firstName,

@@ -46,7 +46,7 @@ router.post("/", createUser);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
 router.put("/changePassword/:id", updatePassword);
-router.put("/profile/:id", upload.single("file"), updateProfile);
+router.put("/profile/:id", upload.single("file"), updateProfileImage);
 router.get("/uploads/:filePath", downloadPhoto);
 router.get("/UserInfo/:token",getUserByToken);
 router.put("/updateProfile/:id", updateProfile);
