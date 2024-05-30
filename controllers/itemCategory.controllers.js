@@ -29,7 +29,7 @@ const getItemCategorys = async (req, res) => {
   }
 };
 
-const getItemCategory = async (req, res) => {
+const getItemCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
     const itemCategory = await ItemCategory.findById(id).populate("itemIds");
@@ -48,20 +48,29 @@ const getItemCategory = async (req, res) => {
 
 const createItemCategory = async (req, res) => {
   try {
-    const formData = {
+    const existCategory = await ItemCategory.findOne({
       categoryName: req.body.categoryName,
-      categoryDescription: req.body.categoryDescription,
-      categoryImage: req.file.filename,
-    };
-    const itemCategory = await ItemCategory.create(formData);
-
-    res.status(200).json({
-      id: itemCategory._id,
-      categoryName: itemCategory.categoryName,
-      categoryDescription: itemCategory.categoryDescription,
-      categoryImage: itemCategory.categoryImage,
-      itemIds: itemCategory.itemIds,
     });
+    if (existCategory != null) {
+      return res.status(500).json({
+        message: "Category is already exist, please insert new category !",
+      });
+    } else {
+      const formData = {
+        categoryName: req.body.categoryName,
+        categoryDescription: req.body.categoryDescription,
+        categoryImage: req.file.filename,
+      };
+      const itemCategory = await ItemCategory.create(formData);
+
+      res.status(200).json({
+        id: itemCategory._id,
+        categoryName: itemCategory.categoryName,
+        categoryDescription: itemCategory.categoryDescription,
+        categoryImage: itemCategory.categoryImage,
+        itemIds: itemCategory.itemIds,
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -84,10 +93,22 @@ const uploadCategoryImage = async (req, res) => {
 const updateItemCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const itemCategory = await ItemCategory.findByIdAndUpdate(id, req.body);
-
+    const itemCategory = await ItemCategory.findById(id);
     if (!itemCategory) {
       return res.status(404).json({ message: "Category not Found !" });
+    }
+
+    if (itemCategory.categoryImage == req.body.file) {
+      await ItemCategory.findByIdAndUpdate(id, {
+        categoryName: req.body.categoryName,
+        categoryDescription: req.body.categoryDescription,
+      });
+    } else {
+      await ItemCategory.findByIdAndUpdate(id, {
+        categoryName: req.body.categoryName,
+        categoryDescription: req.body.categoryDescription,
+        categoryImage: req.file.filename,
+      });
     }
 
     const updatedItemCategory = await ItemCategory.findById(id);
@@ -95,6 +116,7 @@ const updateItemCategory = async (req, res) => {
       id: updatedItemCategory._id,
       categoryName: updatedItemCategory.categoryName,
       categoryDescription: updatedItemCategory.categoryDescription,
+      categoryImage: updatedItemCategory.categoryImage,
       itemIds: updatedItemCategory.itemIds,
     });
   } catch (error) {
@@ -133,7 +155,7 @@ const downloadFile = async (req, res) => {
 
 module.exports = {
   getItemCategorys,
-  getItemCategory,
+  getItemCategoryById,
   createItemCategory,
   uploadCategoryImage,
   downloadFile,

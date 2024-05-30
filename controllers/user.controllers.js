@@ -346,7 +346,6 @@ const updatePassword = async (req, res) => {
       const saltRounds = 10;
       const password = bcrypt.hashSync(newPassword, saltRounds);
       const response = await User.updateOne({ passwordHash: password });
-      console.log("response...", response);
       res.status(200).json({ message: "Password is Successfully Updated !" });
     }
   } catch (error) {
@@ -354,12 +353,269 @@ const updatePassword = async (req, res) => {
   }
 };
 
-const updateProfile = async (req, res) => {
+const updateProfileImage = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    const { profileImage } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      res.status(404).json({ message: "User is Not Found !" });
+    }
+
+    const updateUserProfile = await User.findByIdAndUpdate(id, {
+      profileImage: profileImage,
+    });
+
+    res.status(200).json({
+      id: updateUserProfile._id,
+      firstName: updateUserProfile.firstName,
+      middleName: updateUserProfile.middleName,
+      lastName: updateUserProfile.lastName,
+      fullName: updateUserProfile.fullName,
+      phone: updateUserProfile.phone,
+      email: updateUserProfile.email,
+      profileImage: updateUserProfile.profileImage,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+const updateProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ message: "User is Not Found !" });
+    }
+
+    const updateUser = await User.findByIdAndUpdate(id, {
+      firstName: req.body.firstName,
+      middleName: req.body.middleName,
+      lastName: req.body.lastName,
+      email: req.body.email,
+      phone: req.body.phone,
+      fullName:
+        req.body.firstName +
+        " " +
+        req.body.middleName +
+        " " +
+        req.body.lastName,
+    });
+
+    if (req.body.roleName == "Customer") {
+      const getCustomer = await Customer.findOne({ userId: req.body.id });
+      const customer = await Customer.findByIdAndUpdate(getCustomer._id, {
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+      });
+      res.status(200).json({
+        id: updateUser._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        profileImage: updateUser.profileImage,
+        address: customer.address,
+        subCity: customer.subCity,
+        town: customer.town,
+      });
+    } else if (req.body.roleName == "Admin") {
+      const getAdmin = await Admin.findOne({ userId: req.body.id });
+      const admin = await Admin.findByIdAndUpdate(getAdmin._id, {
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+      });
+      res.status(200).json({
+        id: updateUser._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        profileImage: updateUser.profileImage,
+        address: admin.address,
+        subCity: admin.subCity,
+        town: admin.town,
+      });
+    } else if (req.body.roleName == "Sales Person") {
+      const getSalesPerson = await Customer.findOne({ userId: req.body.id });
+      const salesPerson = await Customer.findByIdAndUpdate(getSalesPerson._id, {
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+      });
+      res.status(200).json({
+        id: updateUser._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        profileImage: updateUser.profileImage,
+        address: salesPerson.address,
+        subCity: salesPerson.subCity,
+        town: salesPerson.town,
+      });
+    } else if (req.body.roleName == "Delivery Person") {
+      const getDeliveryPerson = await Customer.findOne({ userId: req.body.id });
+      const deliveryPerson = await Customer.findByIdAndUpdate(
+        getDeliveryPerson._id,
+        {
+          address: req.body.address,
+          subCity: req.body.subCity,
+          town: req.body.town,
+        }
+      );
+      res.status(200).json({
+        id: updateUser._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        profileImage: updateUser.profileImage,
+        address: deliveryPerson.address,
+        subCity: deliveryPerson.subCity,
+        town: deliveryPerson.town,
+      });
+    }else{
+      res.status(200).json({
+        id: updateUser._id,
+        firstName: updateUser.firstName,
+        middleName: updateUser.middleName,
+        lastName: updateUser.lastName,
+        fullName: updateUser.fullName,
+        phone: updateUser.phone,
+        email: updateUser.email,
+        profileImage: updateUser.profileImage,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getUserByToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({ token: token });
+    if (!user) {
+      res.status(404).json({ message: "User not Found !" });
+    }
+
+    const role = await Role.findById(user.roleIds);
+
+    if (role.roleName == "Admin") {
+      const admin = await Admin.findOne({ userId: user._id });
+      res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        profileImage: user.profileImage,
+        address: admin.address,
+        subCity: admin.subCity,
+        town: admin.town,
+        roleId: role._id,
+        roleName: role.roleName,
+      });
+    } else if (role.roleName == "Customer") {
+      const customer = await Customer.findOne({ userId: user._id });
+      res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        profileImage: user.profileImage,
+        address: customer.address,
+        subCity: customer.subCity,
+        town: customer.town,
+        roleId: role._id,
+        roleName: role.roleName,
+      });
+    } else if (role.roleName == "Sales Person") {
+      const salesPerson = await SalesPerson.findOne({ userId: user._id });
+      res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        profileImage: user.profileImage,
+        address: salesPerson.address,
+        subCity: salesPerson.subCity,
+        roleId: role._id,
+        roleName: role.roleName,
+      });
+    } else if (role.roleName == "Delivery Person") {
+      const deliveryPerson = await DeliveryPerson.findOne({ userId: user._id });
+      res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        profileImage: user.profileImage,
+        address: deliveryPerson.address,
+        subCity: deliveryPerson.subCity,
+        town: deliveryPerson.town,
+        roleId: role._id,
+        roleName: role.roleName,
+      });
+    } else {
+      res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        profileImage: user.profileImage,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const downloadPhoto = async (req, res) => {
+  try {
+    const { filePath } = req.params;
+    const path = process.env.FILE_PATH;
+    const response = path + filePath;
+    res.sendFile(response);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -371,6 +627,9 @@ module.exports = {
   verificationToken,
   updatePassword,
   updateProfile,
+  updateProfileImage,
+  getUserByToken,
+  downloadPhoto,
   createUser,
   updateUser,
   deleteUser,

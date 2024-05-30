@@ -37,6 +37,8 @@ const getCustomers = async (req, res) => {
         lastName: value.userId[0].lastName,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
+        email: value.userId[0].email,
+        profileImage: value.userId[0].profileImage,
         userId: value.userId[0]._id,
         address: value.address,
         subCity: value.subCity,
