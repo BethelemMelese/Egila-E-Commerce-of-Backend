@@ -1,22 +1,68 @@
 const Item = require("../models/item.model.js");
 const ItemCategory = require("../models/itemCategory.model.js");
+const dotenv = require("dotenv");
+const fs = require("fs");
+
+// configuration file
+dotenv.config();
 
 const getItems = async (req, res) => {
   try {
-    const item = await Item.find();
-    // const response = await item.map((value) => {
-    //   const result = {
-    //     // id: value._id,
-    //     itemName: value.itemName,
-    //     itemDescription: value.itemDescription,
-    //     quantity: value.quantity,
-    //     categoryId: value.categoryId._id,
-    //     categoryName: value.categoryId.categoryName,
-    //   };
+    const search = req.query.search || "";
 
-    //   return result;
-    // });
-    res.status(200).json(item);
+    const item = await Item.find({
+      itemName: { $regex: search, $options: "i" },
+      brand: { $regex: search, $options: "i" },
+      itemDescription: { $regex: search, $options: "i" },
+    }).populate("categoryId");
+    const response = item.map((value) => {
+      return {
+        id: value._id,
+        itemName: value.itemName,
+        itemDescription: value.itemDescription,
+        quantity: value.quantity,
+        price: value.price,
+        brand: value.brand,
+        itemImage: value.itemImage,
+        categoryId: value.categoryId._id,
+        categoryName: value.categoryId.categoryName,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getNewArrivalItems = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    let filteredItems;
+    if (search) {
+      filteredItems = await Item.find({
+        itemName: { $regex: search, $options: "i" },
+        brand: { $regex: search, $options: "i" },
+        itemDescription: { $regex: search, $options: "i" },
+      })
+        .sort({ createdAt: -1 })
+        .limit(4);
+    } else {
+      filteredItems = await Item.find().sort({ createdAt: -1 }).limit(4);
+    }
+    const response = filteredItems.map((value) => {
+      return {
+        id: value._id,
+        itemName: value.itemName,
+        itemDescription: value.itemDescription,
+        quantity: value.quantity,
+        price: value.price,
+        brand: value.brand,
+        itemImage: value.itemImage,
+        categoryId: value.categoryId._id,
+        categoryName: value.categoryId.categoryName,
+      };
+    });
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -26,15 +72,18 @@ const getItemById = async (req, res) => {
   try {
     const { id } = req.params;
     const item = await Item.findById(id).populate("categoryId");
-    const result = {
+
+    res.status(200).json({
       id: item._id,
       itemName: item.itemName,
       itemDescription: item.itemDescription,
       quantity: item.quantity,
+      price: item.price,
+      brand: item.brand,
+      itemImage: item.itemImage,
       categoryId: item.categoryId._id,
       categoryName: item.categoryId.categoryName,
-    };
-    res.status(200).json(result);
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -52,13 +101,41 @@ const getItemByCategoryId = async (req, res) => {
         itemName: value.itemName,
         itemDescription: value.itemDescription,
         quantity: value.quantity,
+        price: value.price,
+        brand: value.brand,
+        itemImage: value.itemImage,
         categoryId: value.categoryId._id,
         categoryName: value.categoryId.categoryName,
       };
-
       return result;
     });
     res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const filterItemByCategoryIdAndSearch = async (req, res) => {
+  try {
+    const searchTerm = req.query.search;
+    const categoryId = req.query.id;
+    let filteredItems;
+
+    if (searchTerm != "") {
+      filteredItems = await Item.find({
+        itemName: { $regex: searchTerm, $options: "i" },
+        brand: { $regex: searchTerm, $options: "i" },
+        itemDescription: { $regex: searchTerm, $options: "i" },
+      })
+        .sort({ createdAt: -1 })
+        .limit(4);
+    } else if (categoryId != "") {
+      filteredItems = await Item.find({ categoryId: categoryId });
+    } else {
+      filteredItems = await Item.find().sort({ createdAt: -1 });
+    }
+
+    res.status(200).json(filteredItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -69,16 +146,20 @@ const createItem = async (req, res) => {
     const existItem = await Item.findOne({ itemName: req.body.itemName });
     if (existItem != null) {
       return res.status(500).json({
-        message: "The Item is already exist, please insert new item.",
+        message: "Item is already exist, please insert new item.",
       });
     } else {
-      const item = await Item.create({
+      const formDate = {
         itemName: req.body.itemName,
         itemDescription: req.body.itemDescription,
         quantity: req.body.quantity,
+        brand: req.body.brand,
+        price: req.body.price,
         categoryId: req.body.categoryId,
-      });
+        itemImage: req.file.filename,
+      };
 
+      const item = await Item.create(formDate);
       const itemCategory = await ItemCategory.findByIdAndUpdate(
         { _id: req.body.categoryId },
         { $push: { itemIds: [item._id] } }
@@ -89,6 +170,9 @@ const createItem = async (req, res) => {
         itemName: item.itemName,
         itemDescription: item.itemDescription,
         quantity: item.quantity,
+        brand: item.brand,
+        price: item.price,
+        itemImage: item.itemImage,
         categoryId: itemCategory._id,
         categoryName: itemCategory.categoryName,
       });
@@ -107,41 +191,93 @@ const updateItem = async (req, res) => {
     }
 
     if (getItemValue.categoryId == req.body.categoryId) {
-      const item = await Item.findByIdAndUpdate(id, req.body);
-      res.status(200).json({
-        id: item._id,
-        itemName: item.itemName,
-        itemDescription: item.itemDescription,
-        quantity: item.quantity,
-        categoryId: item.categoryId,
-        categoryName: item.categoryName,
-      });
+      if (getItemValue.itemImage == req.body.file) {
+        const item = await Item.findByIdAndUpdate(id, req.body);
+        res.status(200).json({
+          id: item._id,
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          quantity: item.quantity,
+          brand: item.brand,
+          price: item.price,
+          itemImage: item.itemImage,
+          categoryId: item.categoryId,
+          categoryName: item.categoryName,
+        });
+      } else {
+        const item = await Item.findByIdAndUpdate(id, {
+          itemName: req.body.itemName,
+          itemDescription: req.body.itemDescription,
+          quantity: req.body.quantity,
+          brand: req.body.brand,
+          price: req.body.price,
+          categoryId: req.body.categoryId,
+          itemImage: req.file.filename,
+        });
+        res.status(200).json({
+          id: item._id,
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          quantity: item.quantity,
+          brand: item.brand,
+          price: item.price,
+          itemImage: item.itemImage,
+          categoryId: item.categoryId,
+          categoryName: item.categoryName,
+        });
+      }
     } else {
-      const item = await Item.findByIdAndUpdate(id, req.body);
-      console.log("item..", item);
-      const itemCategory = await ItemCategory.findByIdAndUpdate(
-        { _id: req.body.categoryId },
-        { $push: { itemIds: [id] } }
-      );
+      if (getItemValue.itemImage == req.body.file) {
+        const item = await Item.findByIdAndUpdate(id, req.body);
+        const itemCategory = await ItemCategory.findByIdAndUpdate(
+          { _id: req.body.categoryId },
+          { itemIds: [id] }
+        );
 
-      console.log("itemCategory..", itemCategory);
+        res.status(200).json({
+          id: item._id,
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          quantity: item.quantity,
+          brand: item.brand,
+          price: item.price,
+          itemImage: item.itemImage,
+          categoryId: item.categoryId,
+          categoryName: item.categoryName,
+        });
+      } else {
+        const item = await Item.findByIdAndUpdate(id, {
+          itemName: req.body.itemName,
+          itemDescription: req.body.itemDescription,
+          quantity: req.body.quantity,
+          brand: req.body.brand,
+          price: req.body.price,
+          categoryId: req.body.categoryId,
+          itemImage: req.file.filename,
+        });
+        const itemCategory = await ItemCategory.findByIdAndUpdate(
+          { _id: req.body.categoryId },
+          { itemIds: [id] }
+        );
 
-      const check = await ItemCategory.findByIdAndUpdate(
-        { _id: getItemValue.categoryId },
-        { itemIds: [id] },
-        { $pull: { itemIds: [id] } }
-      );
+        res.status(200).json({
+          id: item._id,
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          quantity: item.quantity,
+          brand: item.brand,
+          price: item.price,
+          itemImage: item.itemImage,
+          categoryId: itemCategory.categoryId,
+          categoryName: itemCategory.categoryName,
+        });
+      }
 
-      console.log("check...", check);
-
-      res.status(200).json({
-        id: item._id,
-        itemName: item.itemName,
-        itemDescription: item.itemDescription,
-        quantity: item.quantity,
-        categoryId: itemCategory._id,
-        categoryName: itemCategory.categoryName,
-      });
+      // const check = await ItemCategory.findByIdAndUpdate(
+      //   { _id: getItemValue.categoryId },
+      //   { itemIds: [id] },
+      //   { $pull: { itemIds: [id] } }
+      // );
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -151,11 +287,14 @@ const updateItem = async (req, res) => {
 const deleteItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await Item.findByIdAndDelete(id);
+    const path = process.env.FILE_PATH;
+    const item = await Item.findById(id);
 
     if (!item) {
       return res.status(404).json({ message: "Item not Found !" });
     }
+    await Item.findByIdAndDelete(id);
+    await fs.promises.unlink(path + item.itemImage);
 
     res.status(200).json({ message: "Item is Successfully Delete !" });
   } catch (error) {
@@ -163,25 +302,25 @@ const deleteItem = async (req, res) => {
   }
 };
 
-async function isExist(params) {
-  await Item.findOne({ itemName: params.itemName }).then((itemName) => {
-    if (itemName != null) {
-      return true;
-    } else {
-      return false;
-    }
-  });
-}
-
-async function isNew(params) {
-  await Item;
-}
+const downloadFile = async (req, res) => {
+  try {
+    const { filePath } = req.params;
+    const path = process.env.FILE_PATH;
+    const response = path + filePath;
+    res.sendFile(response);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   getItems,
+  getNewArrivalItems,
   getItemById,
   getItemByCategoryId,
   createItem,
   updateItem,
   deleteItem,
+  downloadFile,
+  filterItemByCategoryIdAndSearch,
 };

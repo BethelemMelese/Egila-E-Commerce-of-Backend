@@ -1,6 +1,5 @@
 const Item = require("../models/item.model.js");
 const ItemCategory = require("../models/itemCategory.model.js");
-const { Readable } = require("stream");
 const dotenv = require("dotenv");
 const fs = require("fs");
 
@@ -13,14 +12,13 @@ const getItemCategorys = async (req, res) => {
 
     const itemCategory = await ItemCategory.find({
       categoryName: { $regex: search, $options: "i" },
-    }).populate("itemIds");
+    });
     const response = itemCategory.map((value) => {
       return {
         id: value._id,
         categoryName: value.categoryName,
         categoryDescription: value.categoryDescription,
         categoryImage: value.categoryImage,
-        itemIds: value.itemIds,
       };
     });
     res.status(200).json(response);
@@ -133,7 +131,7 @@ const deleteItemCategory = async (req, res) => {
     if (!itemCategory) {
       return res.status(404).json({ message: "Category not Found !" });
     }
-    await itemCategory.deleteOne();
+    await ItemCategory.findByIdAndDelete(id);
     await fs.promises.unlink(path + itemCategory.categoryImage);
 
     res.status(200).json({ message: "Category is Successfully Delete !" });

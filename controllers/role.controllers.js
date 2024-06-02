@@ -2,8 +2,10 @@ const Role = require("../models/role.model.js");
 
 const searchAndFilterRole = async (req, res) => {
   try {
-    const search=req.query.search|| "";
-    const roles=await Role.find({roleName:{$regex:search,$options:"i"}});
+    const search = req.query.search || "";
+    const roles = await Role.find({
+      roleName: { $regex: search, $options: "i" },
+    });
     const response = roles.map((value) => {
       return {
         id: value._id,
@@ -20,8 +22,10 @@ const searchAndFilterRole = async (req, res) => {
 
 const getRoles = async (req, res) => {
   try {
-    const search=req.query.search|| "";
-    const roles=await Role.find({roleName:{$regex:search,$options:"i"}}).populate("userIds");
+    const search = req.query.search || "";
+    const roles = await Role.find({
+      roleName: { $regex: search, $options: "i" },
+    }).populate("userIds");
     const response = roles.map((value) => {
       return {
         id: value._id,
@@ -77,13 +81,19 @@ const createRole = async (req, res) => {
 const updateRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const role = await Role.findByIdAndUpdate(id, req.body);
+    const existRole = await Role.findOne({ roleName: req.body.roleName });
+    if (existRole != null) {
+      return res.status(500).json({
+        message: "Role is already exist, please insert new role !",
+      });
+    }
+    const role = await Role.findById(id, req.body);
 
     if (!role) {
       return res.status(404).json({ message: "Role is not Found !" });
     }
-
-    const updatedRole = await Role.findById(id);
+    const response = await Role.findByIdAndUpdate(id, req.body);
+    const updatedRole = await Role.findById(response._id);
     res.status(200).json({
       id: updatedRole._id,
       roleName: updatedRole.roleName,

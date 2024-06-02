@@ -47,7 +47,7 @@ const UserSchema = mongoose.Schema(
     },
     profileImage: {
       type: String,
-      required: true,
+      required: false,
     },
     roleIds: [{ type: mongoose.Types.ObjectId, ref: "Role", required: false }],
   },

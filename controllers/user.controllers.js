@@ -1,6 +1,8 @@
 const User = require("../models/user.model.js");
 const Admin = require("../models/admin.model.js");
 const Customer = require("../models/customer.model.js");
+const SalesPerson = require("../models/salesPerson.model.js");
+const DeliveryPerson = require("../models/deliveryPerson.model.js");
 const Role = require("../models/role.model.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -134,7 +136,7 @@ const createUser = async (req, res) => {
   try {
     const role = await Role.findById(req.body.roleId);
     if (role.roleName == "Admin") {
-      const isExistUser = await User.find({
+      const isExistUser = await User.findOne({
         $or: [
           { username: req.body.username },
           { email: req.body.email },
@@ -207,7 +209,7 @@ const createUser = async (req, res) => {
         });
       }
     } else if (role.roleName == "Customer") {
-      const isExistUser = await User.find({
+      const isExistUser = await User.findOne({
         $or: [
           { username: req.body.username },
           { email: req.body.email },
@@ -427,8 +429,6 @@ const updateProfile = async (req, res) => {
       const getAdmin = await Admin.findOne({ userId: req.body.id });
       const admin = await Admin.findByIdAndUpdate(getAdmin._id, {
         address: req.body.address,
-        subCity: req.body.subCity,
-        town: req.body.town,
       });
       res.status(200).json({
         id: updateUser._id,
@@ -440,16 +440,15 @@ const updateProfile = async (req, res) => {
         email: updateUser.email,
         profileImage: updateUser.profileImage,
         address: admin.address,
-        subCity: admin.subCity,
-        town: admin.town,
       });
     } else if (req.body.roleName == "Sales Person") {
-      const getSalesPerson = await Customer.findOne({ userId: req.body.id });
-      const salesPerson = await Customer.findByIdAndUpdate(getSalesPerson._id, {
-        address: req.body.address,
-        subCity: req.body.subCity,
-        town: req.body.town,
-      });
+      const getSalesPerson = await SalesPerson.findOne({ userId: req.body.id });
+      const salesPerson = await SalesPerson.findByIdAndUpdate(
+        getSalesPerson._id,
+        {
+          address: req.body.address,
+        }
+      );
       res.status(200).json({
         id: updateUser._id,
         firstName: updateUser.firstName,
@@ -460,17 +459,15 @@ const updateProfile = async (req, res) => {
         email: updateUser.email,
         profileImage: updateUser.profileImage,
         address: salesPerson.address,
-        subCity: salesPerson.subCity,
-        town: salesPerson.town,
       });
     } else if (req.body.roleName == "Delivery Person") {
-      const getDeliveryPerson = await Customer.findOne({ userId: req.body.id });
-      const deliveryPerson = await Customer.findByIdAndUpdate(
+      const getDeliveryPerson = await DeliveryPerson.findOne({
+        userId: req.body.id,
+      });
+      const deliveryPerson = await DeliveryPerson.findByIdAndUpdate(
         getDeliveryPerson._id,
         {
           address: req.body.address,
-          subCity: req.body.subCity,
-          town: req.body.town,
         }
       );
       res.status(200).json({
@@ -483,8 +480,6 @@ const updateProfile = async (req, res) => {
         email: updateUser.email,
         profileImage: updateUser.profileImage,
         address: deliveryPerson.address,
-        subCity: deliveryPerson.subCity,
-        town: deliveryPerson.town,
       });
     } else {
       res.status(200).json({

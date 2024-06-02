@@ -37,6 +37,7 @@ const getSalesPersons = async (req, res) => {
         lastName: value.userId[0].lastName,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
+        username: value.userId[0].username,
         userId: value.userId[0]._id,
         address: value.address,
         subCity: value.subCity,
@@ -81,19 +82,21 @@ const getSalesPersonById = async (req, res) => {
 
 const createSalesPerson = async (req, res) => {
   try {
-    const role = await Role.findById(req.body.roleId);
-    const existSalesPerson = await SalesPerson.findOne({
-      email: req.body.email,
-      phone: req.body.phone,
-      username: req.body.username,
+    const role = await Role.findOne({ roleName: "Sales Person" });
+    const isExistUser = await User.findOne({
+      $or: [
+        { username: req.body.username },
+        { email: req.body.email },
+        { phone: req.body.phone },
+      ],
     });
 
-    if (existSalesPerson != null) {
+    if (isExistUser != null) {
       return res.status(500).json({
         message: "Sales Person is already exist !",
       });
     } else {
-      const generateToken = await jwt.sign(
+      const generateToken = jwt.sign(
         {
           time: Date(),
           name:
@@ -111,9 +114,9 @@ const createSalesPerson = async (req, res) => {
           expiresIn: 3600000,
         }
       );
-
       const saltRounds = 10;
-      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const userPassword = "Q@" + req.body.username;
+      const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,
         middleName: req.body.middleName,
@@ -130,7 +133,7 @@ const createSalesPerson = async (req, res) => {
         passwordHash: password,
         token: generateToken,
         registrationDate: Date(),
-        roleIds: req.body.roleId,
+        roleIds: role._id,
       });
 
       const salesPerson = await SalesPerson.create({
@@ -220,7 +223,7 @@ const deleteSalesPerson = async (req, res) => {
     await User.findByIdAndDelete(salesPerson.userId);
     await SalesPerson.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "Sales Person Deleted Successfully !" });
+    res.status(200).json({ message: "Sales Person is Successfully Deleted !" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
