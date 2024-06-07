@@ -13,6 +13,8 @@ const customer = require("./routes/customer.route.js");
 const admin = require("./routes/admin.route.js");
 const salesPerson = require("./routes/salesPerson.route.js");
 const deliveryPerson = require("./routes/deliveryPerson.route.js");
+const cart = require("./routes/cart.route.js");
+const order=require("./routes/order.route.js");
 const app = express();
 
 app.use(express.json());
@@ -45,6 +47,8 @@ app.use("/api/customers", customer);
 app.use("/api/admins", admin);
 app.use("/api/salesPersons", salesPerson);
 app.use("/api/deliveryPersons", deliveryPerson);
+app.use("/api/carts", cart);
+app.use("/api/orders",order);
 
 // Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;

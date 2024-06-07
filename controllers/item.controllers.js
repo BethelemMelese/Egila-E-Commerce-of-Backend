@@ -135,7 +135,21 @@ const filterItemByCategoryIdAndSearch = async (req, res) => {
       filteredItems = await Item.find().sort({ createdAt: -1 });
     }
 
-    res.status(200).json(filteredItems);
+    const response = await filteredItems.map((value) => {
+      const result = {
+        id: value._id,
+        itemName: value.itemName,
+        itemDescription: value.itemDescription,
+        quantity: value.quantity,
+        price: value.price,
+        brand: value.brand,
+        itemImage: value.itemImage,
+        categoryId: value.categoryId._id,
+        categoryName: value.categoryId.categoryName,
+      };
+      return result;
+    });
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

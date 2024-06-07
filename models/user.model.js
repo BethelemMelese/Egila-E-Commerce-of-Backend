@@ -8,7 +8,7 @@ const UserSchema = mongoose.Schema(
     },
     middleName: {
       type: String,
-      required: [true, "Please insert middle Name"],
+      required: [true, "Please insert Middle Name"],
     },
     lastName: {
       type: String,
@@ -25,21 +25,20 @@ const UserSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
     },
     username: {
       type: String,
-      required: [true, "please insert username"],
-      unique: true,
+      required:false,
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: false,
     },
     token: {
       type: String,
-      required: true,
+      required: false,
     },
     registrationDate: {
       type: Date,

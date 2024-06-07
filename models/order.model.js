@@ -18,10 +18,10 @@ const OrderSchema = mongoose.Schema(
       type: String,
       required: [true, "please insert shopping address"],
     },
-    itemIds: [
+    cartIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Item",
+        ref: "Cart",
         required: false,
       },
     ],

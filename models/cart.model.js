@@ -10,6 +10,14 @@ const CartSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
+    uUID: {
+      type: String,
+      required: true,
+    },
+    subTotal: {
+      type: Number,
+      required: true,
+    },
     itemIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
