@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 
 const OrderSchema = mongoose.Schema(
   {
+    orderOwner: {
+      type: String,
+      required: [true, "please insert order owner"],
+    },
+    orderPhone: {
+      type: String,
+      required: [true, "please insert order phone"],
+    },
     totalAmount: {
       type: Number,
       required: true,

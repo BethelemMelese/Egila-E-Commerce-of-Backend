@@ -1,0 +1,16 @@
+{
+  "roles": [
+    {
+      "name": "Customer",
+      "permission": ["create_role", "read_role", "update_role", "delete_role"]
+    },
+    {
+      "name": "manager",
+      "permission": ["create_role", "read_role", "update_role"]
+    },
+    {
+      "name": "employee",
+      "permission": ["create_role", "read_role"]
+    }
+  ]
+}

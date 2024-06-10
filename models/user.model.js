@@ -35,6 +35,7 @@ const UserSchema = mongoose.Schema(
     passwordHash: {
       type: String,
       required: false,
+      unique:false,
     },
     token: {
       type: String,

@@ -15,6 +15,7 @@ const salesPerson = require("./routes/salesPerson.route.js");
 const deliveryPerson = require("./routes/deliveryPerson.route.js");
 const cart = require("./routes/cart.route.js");
 const order=require("./routes/order.route.js");
+const rbacMiddleware=require("./middleware/rbacMIddleware.js");
 const app = express();
 
 app.use(express.json());
@@ -42,7 +43,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/itemCategorys", itemCategoryRoutes);
 app.use("/api/items", item);
 app.use("/api/userProfiles", userProfile);
-app.use("/api/roles", role);
+app.use("/api/roles",role);
 app.use("/api/customers", customer);
 app.use("/api/admins", admin);
 app.use("/api/salesPersons", salesPerson);

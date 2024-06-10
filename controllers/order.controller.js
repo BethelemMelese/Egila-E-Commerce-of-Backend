@@ -4,17 +4,33 @@ const Order = require("../models/order.model.js");
 const Payment = require("../models/payment.model.js");
 const Item = require("../models/item.model.js");
 const Cart = require("../models/cart.model.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const createOrder = async (req, res) => {
   try {
     const user = await User.findOne({ phone: req.body.phone });
+    let array = [];
+    let totalAmount = 0;
+
+    const cartIds = await Cart.find({ uUID: req.body.uuId });
+    cartIds.forEach((element) => {
+      array.push(element.id);
+    });
+
+    cartIds.forEach((element) => {
+      totalAmount = totalAmount + element.subTotal;
+    });
+
+    const saltRounds = 10;
+    const password = bcrypt.hashSync(req.body.phone, saltRounds);
     if (user == null) {
       await User.create({
         firstName: req.body.firstName,
         middleName: req.body.middleName,
         lastName: req.body.lastName,
-        username: req.body.firstName,
-        passwordHash: "",
+        username: req.body.phone,
+        passwordHash: password,
         fullName:
           req.body.firstName +
           " " +
@@ -31,17 +47,24 @@ const createOrder = async (req, res) => {
           userId: response._id,
         }).then((secondResponse) => {
           Order.create({
-            totalAmount: req.body.totalAmount,
+            totalAmount: totalAmount,
+            orderOwner:
+              req.body.firstName +
+              " " +
+              req.body.middleName +
+              " " +
+              req.body.lastName,
+            orderPhone: req.body.phone,
             orderDate: new Date(),
             orderStatus: "Pending",
             shoppingAddress:
               req.body.town + "," + req.body.subCity + "," + req.body.address,
-            cartIds: req.body.cartIds,
+            cartIds: array,
             customerIds: secondResponse._id,
           }).then((orderResponse) => {
             Payment.create({
               paymentMethod: req.body.paymentMethod,
-              paymentSlip: req.body.paymentSlip,
+              paymentSlip: req.file.filename,
               paymentStatus: "Payed",
               orderIds: orderResponse._id,
               customerIds: orderResponse.customerIds,
@@ -52,17 +75,24 @@ const createOrder = async (req, res) => {
     } else {
       const customer = await Customer.findOne({ userId: user._id });
       await Order.create({
-        totalAmount: req.body.totalAmount,
+        orderOwner:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        orderPhone: req.body.phone,
+        totalAmount: totalAmount,
         orderDate: new Date(),
         orderStatus: "Pending",
         shoppingAddress:
-          req.body.town + "," + req.body.subCity + "," + req.body.address,
-        itemIds: req.body.itemIds,
+          req.body.address + "," + req.body.subCity + "," + req.body.town,
+        cartIds: array,
         customerIds: customer._id,
       }).then((orderResponse) => {
         Payment.create({
           paymentMethod: req.body.paymentMethod,
-          paymentSlip: req.body.paymentSlip,
+          paymentSlip: req.file.filename,
           paymentStatus: "Payed",
           orderIds: orderResponse._id,
           customerIds: orderResponse.customerIds,
@@ -78,30 +108,34 @@ const createOrder = async (req, res) => {
 
 const getOrder = async (req, res) => {
   try {
-    const order = await Order.find()
+    const search = req.query.search || "";
+    const order = await Order.find({
+      orderOwner: { $regex: search, $options: "i" },
+      orderStatus: { $regex: search, $options: "i" },
+      shoppingAddress: { $regex: search, $options: "i" },
+      shoppingAddress: { $regex: search, $options: "i" },
+    })
       .populate({
-        path: "cartIds",
+        path: "customerIds",
         select: "-__v",
       })
       .select("-__v");
-    console.log("order...", order);
-    const response = order.map((value) => {
-      const cart = Cart.find({ _id: value.cartIds }).populate(
-        {
-          path: "itemIds",
-          select: "-__v",
-        },
-        {
-          path: "customerIds",
-          select: "-__v",
-        }
-      );
+    res.status(200).json(order);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
-      return cart;
-    });
+const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findByIdAndDelete(id);
 
-    console.log("cart...", response);
-    // const customer= await Customer.find()
+    if (!order) {
+      return res.status(404).json({ message: "Order is not Found !" });
+    }
+
+    res.status(200).json({ message: "Order Deleted Successfully !" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -110,4 +144,5 @@ const getOrder = async (req, res) => {
 module.exports = {
   createOrder,
   getOrder,
+  deleteOrder,
 };

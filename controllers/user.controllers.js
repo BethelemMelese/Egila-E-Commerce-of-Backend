@@ -7,6 +7,7 @@ const Role = require("../models/role.model.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const permissions = require("../models/permissions.js");
 
 // configuration file
 dotenv.config();
@@ -72,12 +73,14 @@ const loginUser = async (req, res) => {
 
     if (user && isPasswordMatch) {
       const role = await Role.findById(user.roleIds);
+      const userPermissions = new permissions().getPermissionsByRoleName(
+        role.roleName
+      );
       res.status(200).json({
         message: "Login is Successfully Done !",
-        fullName: user.fullName,
-        roleId: role._id,
-        roleName: role.roleName,
         token: user.token,
+        role:role.roleName,
+        userPermissions: userPermissions,
       });
     } else if (!isPasswordMatch) {
       res.status(404).json({
@@ -116,19 +119,19 @@ const generateToken = async (req, res) => {
   }
 };
 
-const verificationToken = async (req, res) => {
+const verificationToken = async (req, res, next) => {
   try {
-    let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
-    const token = req.header(tokenHeaderKey);
-    const verified = jwt.verify(token, jwtSecretKey);
-    if (verified) {
-      return res.status(200).send("Successfully Verified !");
+    const bearerHeader = req.headers["authorization"];
+    if (typeof bearerHeader !== "undefined") {
+      const bearer = bearerHeader.split(" ");
+      const bearerToken = bearer[1];
+      req.token = bearerToken;
+      next();
     } else {
-      return res.status(401).send("Something is Wrong !");
+      res.sendStatus(403);
     }
   } catch (error) {
-    res.status(500).json({ message: error, message });
+    res.status(500).json({ message: error.message });
   }
 };
 
