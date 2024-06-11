@@ -35,6 +35,7 @@ const getCustomers = async (req, res) => {
         firstName: value.userId[0].firstName,
         middleName: value.userId[0].middleName,
         lastName: value.userId[0].lastName,
+        username:value.userId[0].username,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
         email: value.userId[0].email,
@@ -68,6 +69,7 @@ const getCustomerById = async (req, res) => {
       middleName: user.middleName,
       lastName: user.lastName,
       fullName: user.fullName,
+      username:user.username,
       phone: user.phone,
       email: user.email,
       token: user.token,
@@ -87,10 +89,12 @@ const getCustomerById = async (req, res) => {
 const createCustomer = async (req, res) => {
   try {
     const role = await Role.findById(req.body.roleId);
-    const existCustomer = await Customer.findOne({
-      email: req.body.email,
-      phone: req.body.phone,
-      username: req.body.username,
+    const existCustomer = await User.findOne({
+      $or: [
+        { email: req.body.email },
+        { phone: req.body.phone },
+        { username: req.body.username },
+      ],
     });
 
     if (existCustomer != null) {
@@ -109,7 +113,7 @@ const createCustomer = async (req, res) => {
             req.body.lastName,
           email: req.body.email,
           roleId: role._id,
-          roleName: role.roleName,
+          roleIds: role._id,
         },
         process.env.JWT_SECRET_KEY,
         {

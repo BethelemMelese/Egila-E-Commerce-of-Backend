@@ -1,11 +1,16 @@
 const Customer = require("../models/customer.model.js");
 const User = require("../models/user.model.js");
+const Deliveries = require("../models/deliveryPerson.model.js");
 const Order = require("../models/order.model.js");
 const Payment = require("../models/payment.model.js");
 const Item = require("../models/item.model.js");
 const Cart = require("../models/cart.model.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+// configuration file
+dotenv.config();
 
 const createOrder = async (req, res) => {
   try {
@@ -99,7 +104,6 @@ const createOrder = async (req, res) => {
         });
       });
     }
-
     res.status(200).json({ message: "Order is Successfully Created" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -109,20 +113,121 @@ const createOrder = async (req, res) => {
 const getOrder = async (req, res) => {
   try {
     const search = req.query.search || "";
-    const order = await Order.find({
-      orderOwner: { $regex: search, $options: "i" },
-      orderStatus: { $regex: search, $options: "i" },
-      shoppingAddress: { $regex: search, $options: "i" },
-      shoppingAddress: { $regex: search, $options: "i" },
-    })
-      .populate({
-        path: "customerIds",
-        select: "-__v",
-      })
-      .select("-__v");
-    res.status(200).json(order);
+    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    let order;
+    jwt.verify(req.token, jwtSecretKey, async (err, autoData) => {
+      if (err) res.status(403).json({ message: "Permission not allowed" });
+      else {
+        if (autoData.roleName == "Sales Person") {
+          order = await Order.find({
+            orderOwner: { $regex: search, $options: "i" },
+            orderStatus: { $regex: search, $options: "i" },
+            shoppingAddress: { $regex: search, $options: "i" },
+            shoppingAddress: { $regex: search, $options: "i" },
+          })
+            .populate({
+              path: "customerIds",
+              select: "-__v",
+            })
+            .select("-__v");
+          const response = order.map((value) => {
+            return {
+              id: value._id,
+              orderOwner: value.orderOwner,
+              orderPhone: value.orderPhone,
+              totalAmount: value.totalAmount,
+              orderDate: value.orderDate,
+              orderStatus: value.orderStatus,
+              shoppingAddress: value.shoppingAddress,
+              cartIds: value.cartIds,
+              customerIds: value.customerIds[0]._id,
+              deliveryPersonId: value.deliveryPersonId,
+              isAssign: value.deliveryPersonId == null ? false : true,
+            };
+          });
+          res.status(200).json(response);
+        } else {
+          const user = await User.findOne({ email: autoData.email });
+          const deliveries = await Deliveries.findOne({
+            userId: user._id,
+          });
+          order = await Order.find({ deliveryPersonId: deliveries._id })
+            .populate({
+              path: "customerIds",
+              select: "-__v",
+            })
+            .populate({
+              path: "deliveryPersonId",
+              select: "-__v",
+            })
+            .select("-__v");
+
+          const response = order.map((value) => {
+            return {
+              id: value._id,
+              orderOwner: value.orderOwner,
+              orderPhone: value.orderPhone,
+              totalAmount: value.totalAmount,
+              orderDate: value.orderDate,
+              orderStatus: value.orderStatus,
+              shoppingAddress: value.shoppingAddress,
+              cartIds: value.cartIds,
+              customerIds: value.customerIds[0]._id,
+              deliveryPersonId: value.deliveryPersonId,
+            };
+          });
+
+          res.status(200).json(response);
+        }
+      }
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+const assignDeliveryPerson = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+
+    if (order == null) {
+      return res.status(500).json({
+        message: "Order not Found",
+      });
+    }
+
+    const response = await Order.findByIdAndUpdate(id, {
+      deliveryPersonId: req.body.deliveryPersonId,
+      orderStatus: "Ongoing",
+    });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+
+    if (order == null) {
+      return res.status(500).json({
+        message: "Order not Found",
+      });
+    }
+
+    const response = await Order.findByIdAndUpdate(id, {
+      orderStatus: req.body.orderStatus,
+    });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -143,6 +248,8 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
+  assignDeliveryPerson,
+  updateOrderStatus,
   getOrder,
   deleteOrder,
 };

@@ -13,36 +13,36 @@ const rbacMiddleware = require("../middleware/rbacMIddleware.js");
 router.get(
   "/",
   verificationToken,
-  rbacMiddleware.checkRole("Customer"),
-  rbacMiddleware.checkPermission("Customer", "read_role"),
+  rbacMiddleware.checkRole("Admin"),
+  rbacMiddleware.checkPermission("Admin", "read_role"),
   getRoles
 );
 router.get(
   "/:id",
   verificationToken,
-  rbacMiddleware.checkRole("Customer"),
-  rbacMiddleware.checkPermission("Customer", "read_role"),
+  rbacMiddleware.checkRole("Admin"),
+  rbacMiddleware.checkPermission("Admin", "read_role"),
   getRole
 );
 router.post(
   "/",
   verificationToken,
-  rbacMiddleware.checkRole("Customer"),
-  rbacMiddleware.checkPermission("Customer", "create_role"),
+  rbacMiddleware.checkRole("Admin"),
+  rbacMiddleware.checkPermission("Admin", "create_role"),
   createRole
 );
 router.put(
   "/:id",
   verificationToken,
-  rbacMiddleware.checkRole("Customer"),
-  rbacMiddleware.checkPermission("Customer", "update_role"),
+  rbacMiddleware.checkRole("Admin"),
+  rbacMiddleware.checkPermission("Admin", "update_role"),
   updateRole
 );
 router.delete(
   "/:id",
   verificationToken,
-  rbacMiddleware.checkRole("Customer"),
-  rbacMiddleware.checkPermission("Customer", "delete_role"),
+  rbacMiddleware.checkRole("Admin"),
+  rbacMiddleware.checkPermission("Admin", "delete_role"),
   deleteRole
 );
 

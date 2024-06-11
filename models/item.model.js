@@ -34,13 +34,6 @@ const ItemSchema = mongoose.Schema(
         required: false,
       },
     ],
-    orderIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Order",
-        required: false,
-      },
-    ],
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ItemCategory",

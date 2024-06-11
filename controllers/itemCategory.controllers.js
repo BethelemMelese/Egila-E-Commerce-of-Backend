@@ -27,6 +27,27 @@ const getItemCategorys = async (req, res) => {
   }
 };
 
+const getItemCategoryNames = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+
+    const itemCategory = await ItemCategory.find({
+      categoryName: { $regex: search, $options: "i" },
+    });
+    const response = itemCategory.map((value) => {
+      return {
+        id: value._id,
+        categoryName: value.categoryName,
+        categoryDescription: value.categoryDescription,
+        categoryImage: value.categoryImage,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getItemCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -154,6 +175,7 @@ const downloadFile = async (req, res) => {
 module.exports = {
   getItemCategorys,
   getItemCategoryById,
+  getItemCategoryNames,
   createItemCategory,
   uploadCategoryImage,
   downloadFile,

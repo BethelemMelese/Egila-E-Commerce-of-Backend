@@ -9,7 +9,6 @@ const {
   getUserByRoleId,
   loginUser,
   logOutUser,
-  generateToken,
   verificationToken,
   updatePassword,
   deleteUser,
@@ -18,7 +17,7 @@ const {
   updateProfile,
   updateProfileImage,
   downloadPhoto,
-  getUserByToken
+  getUserByToken,
 } = require("../controllers/user.controllers.js");
 
 // Set up Multer storage configuration
@@ -40,15 +39,18 @@ router.get("/", getUserByUserName);
 router.get("/roleId/:id", getUserByRoleId);
 router.post("/login", loginUser);
 router.post("/logout", logOutUser);
-router.post("/generateToken", generateToken);
-router.post("/validateToken", verificationToken);
 router.post("/", createUser);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+router.put("/:id", verificationToken, updateUser);
+router.delete("/:id", verificationToken, deleteUser);
 router.put("/changePassword/:id", updatePassword);
-router.put("/profile/:id", upload.single("file"), updateProfileImage);
+router.put(
+  "/profile/:id",
+  verificationToken,
+  upload.single("file"),
+  updateProfileImage
+);
 router.get("/uploads/:filePath", downloadPhoto);
-router.get("/UserInfo/:token",getUserByToken);
-router.put("/updateProfile/:id", updateProfile);
+router.get("/UserInfo/:token", verificationToken, getUserByToken);
+router.put("/updateProfile/:id", verificationToken, updateProfile);
 
 module.exports = router;

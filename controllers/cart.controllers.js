@@ -94,6 +94,31 @@ const getCart = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const getCartList = async (req, res) => {
+  try {
+    const ids = req.body.cartIds;
+    const cart = await Cart.find({ _id: ids }).populate({
+      path: "itemIds",
+    });
+    const response = cart.map((value) => {
+      return {
+        id: value._id,
+        uuId: value.uUID,
+        itemName: value.itemIds[0].itemName,
+        itemDescription: value.itemIds[0].itemDescription,
+        itemImage: value.itemIds[0].itemImage,
+        price: `${value.itemIds[0].price} (ETB)`,
+        quantity: value.quantity,
+        brand: value.itemIds[0].brand,
+        subTotal: `${value.subTotal} (ETB)`,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 const updateCart = async (req, res) => {
   try {
     const { id } = req.params;
@@ -144,6 +169,7 @@ const deleteCart = async (req, res) => {
 module.exports = {
   getCartCounter,
   getCart,
+  getCartList,
   createCart,
   updateCart,
   deleteCart,

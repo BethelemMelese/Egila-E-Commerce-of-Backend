@@ -35,6 +35,7 @@ const getAdmins = async (req, res) => {
         firstName: value.userId[0].firstName,
         middleName: value.userId[0].middleName,
         lastName: value.userId[0].lastName,
+        username: value.userId[0].username,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
         userId: value.userId[0]._id,
@@ -65,6 +66,7 @@ const getAdminById = async (req, res) => {
       middleName: user.middleName,
       lastName: user.lastName,
       fullName: user.fullName,
+      username: user.username,
       phone: user.phone,
       email: user.email,
       token: user.token,
@@ -81,11 +83,13 @@ const getAdminById = async (req, res) => {
 
 const createAdmin = async (req, res) => {
   try {
-    const role = await Role.findById(req.body.roleId);
-    const existAdmin = await Admin.findOne({
-      email: req.body.email,
-      phone: req.body.phone,
-      username: req.body.username,
+    const role = await Role.findOne({ roleName: "Admin" });
+    const existAdmin = await User.findOne({
+      $or: [
+        { username: req.body.username },
+        { email: req.body.email },
+        { phone: req.body.phone },
+      ],
     });
 
     if (existAdmin != null) {
@@ -113,7 +117,8 @@ const createAdmin = async (req, res) => {
       );
 
       const saltRounds = 10;
-      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const userPassword = "A@" + req.body.username;
+      const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,
         middleName: req.body.middleName,
@@ -130,7 +135,7 @@ const createAdmin = async (req, res) => {
         passwordHash: password,
         token: generateToken,
         registrationDate: Date(),
-        roleIds: req.body.roleId,
+        roleIds: role._id,
       });
 
       const admin = await Admin.create({

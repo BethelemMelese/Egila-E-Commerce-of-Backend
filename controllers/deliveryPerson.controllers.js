@@ -35,6 +35,7 @@ const getDeliveryPersons = async (req, res) => {
         firstName: value.userId[0].firstName,
         middleName: value.userId[0].middleName,
         lastName: value.userId[0].lastName,
+        username: value.userId[0].username,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
         userId: value.userId[0]._id,
@@ -65,6 +66,7 @@ const getDeliveryPersonById = async (req, res) => {
       middleName: user.middleName,
       lastName: user.lastName,
       fullName: user.fullName,
+      username: user.username,
       phone: user.phone,
       email: user.email,
       token: user.token,
@@ -79,18 +81,38 @@ const getDeliveryPersonById = async (req, res) => {
   }
 };
 
+const getDeliveryPersonName = async (req, res) => {
+  try {
+    const deliveryPerson = await DeliveryPerson.find().populate({
+      path: "userId",
+    });
+
+    const response = deliveryPerson.map((value) => {
+      return {
+        id: value._id,
+        fullName: value.userId[0].fullName,
+      };
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const createDeliveryPerson = async (req, res) => {
   try {
-    const role = await Role.findById(req.body.roleId);
-    const existDeliveryPerson = await DeliveryPerson.findOne({
-      email: req.body.email,
-      phone: req.body.phone,
-      username: req.body.username,
+    const role = await Role.findOne({ roleName: "Delivery Person" });
+    const existDeliveryPerson = await User.findOne({
+      $or: [
+        { email: req.body.email },
+        { phone: req.body.phone },
+        { username: req.body.username },
+      ],
     });
 
     if (existDeliveryPerson != null) {
       return res.status(500).json({
-        message: "DeliveryPerson is already exist !",
+        message: "Delivery Person is already exist !",
       });
     } else {
       const generateToken = await jwt.sign(
@@ -113,7 +135,8 @@ const createDeliveryPerson = async (req, res) => {
       );
 
       const saltRounds = 10;
-      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const userPassword = "D@" + req.body.username;
+      const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,
         middleName: req.body.middleName,
@@ -130,7 +153,7 @@ const createDeliveryPerson = async (req, res) => {
         passwordHash: password,
         token: generateToken,
         registrationDate: Date(),
-        roleIds: req.body.roleId,
+        roleIds: role._id,
       });
 
       const deliveryPerson = await DeliveryPerson.create({
@@ -229,6 +252,7 @@ const deleteDeliveryPerson = async (req, res) => {
 module.exports = {
   getDeliveryPersons,
   getDeliveryPersonById,
+  getDeliveryPersonName,
   createDeliveryPerson,
   updateDeliveryPerson,
   deleteDeliveryPerson,

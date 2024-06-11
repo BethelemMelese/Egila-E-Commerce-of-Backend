@@ -14,7 +14,7 @@ dotenv.config();
 
 const getUsers = async (req, res) => {
   try {
-    const user = await User.find({});
+    const user = await User.find();
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -76,10 +76,14 @@ const loginUser = async (req, res) => {
       const userPermissions = new permissions().getPermissionsByRoleName(
         role.roleName
       );
+      const controllers = new permissions().getControllerByRoleName(
+        role.roleName
+      );
       res.status(200).json({
         message: "Login is Successfully Done !",
         token: user.token,
-        role:role.roleName,
+        role: role.roleName,
+        controllers: controllers,
         userPermissions: userPermissions,
       });
     } else if (!isPasswordMatch) {
