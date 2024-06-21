@@ -13,6 +13,10 @@ const salesPerson = require("./routes/salesPerson.route.js");
 const deliveryPerson = require("./routes/deliveryPerson.route.js");
 const cart = require("./routes/cart.route.js");
 const order = require("./routes/order.route.js");
+const payment = require("./routes/payment.route.js");
+const dashbaord = require("./routes/dashbaord.route.js");
+const comment = require("./routes/comment.route.js");
+const report=require("./routes/report.route.js");
 const app = express();
 
 app.use(express.json());
@@ -46,6 +50,13 @@ app.use("/api/salesPersons", salesPerson);
 app.use("/api/deliveryPersons", deliveryPerson);
 app.use("/api/carts", cart);
 app.use("/api/orders", order);
+app.use("/api/payments", payment);
+app.use("/api/dashboard", dashbaord);
+app.use("/api/comments", comment);
+app.use("/api/reports",report);
+app.get("/", (req, res) => {
+  res.send("The Server Side running Successfully");
+});
 
 // Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;
@@ -62,4 +73,3 @@ mongoose
   .catch((error) => {
     console.log("Connection failed!", error);
   });
-

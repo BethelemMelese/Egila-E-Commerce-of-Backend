@@ -140,14 +140,44 @@ const getOrder = async (req, res) => {
               orderStatus: value.orderStatus,
               shoppingAddress: value.shoppingAddress,
               cartIds: value.cartIds,
-              customerIds: value.customerIds[0]._id,
+              customerIds: value.customerIds,
               deliveryPersonId: value.deliveryPersonId,
               isAssign: value.deliveryPersonId == null ? false : true,
             };
           });
           res.status(200).json(response);
-        } else {
-          const user = await User.findOne({ email: autoData.email });
+        }else if(autoData.roleName == "Customer"){
+          const user=await User.findOne({email:autoData.email});
+          const customer= await Customer.findOne({userId:user._id});
+          order = await Order.find({ customerIds: customer._id })
+            .populate({
+              path: "customerIds",
+              select: "-__v",
+            })
+            .populate({
+              path: "deliveryPersonId",
+              select: "-__v",
+            })
+            .select("-__v");
+
+          const response = order.map((value) => {
+            return {
+              id: value._id,
+              orderOwner: value.orderOwner,
+              orderPhone: value.orderPhone,
+              totalAmount: value.totalAmount,
+              orderDate: value.orderDate,
+              orderStatus: value.orderStatus,
+              shoppingAddress: value.shoppingAddress,
+              cartIds: value.cartIds,
+              customerIds: value.customerIds._id,
+              deliveryPersonId: value.deliveryPersonId,
+              isAssign: value.deliveryPersonId == null ? false : true,
+            };
+          });
+        }
+         else {
+          const user = await User.findOne({ id: autoData.id });
           const deliveries = await Deliveries.findOne({
             userId: user._id,
           });
@@ -172,8 +202,9 @@ const getOrder = async (req, res) => {
               orderStatus: value.orderStatus,
               shoppingAddress: value.shoppingAddress,
               cartIds: value.cartIds,
-              customerIds: value.customerIds[0]._id,
+              customerIds: value.customerIds._id,
               deliveryPersonId: value.deliveryPersonId,
+              isAssign: value.deliveryPersonId == null ? false : true,
             };
           });
 
@@ -223,6 +254,12 @@ const updateOrderStatus = async (req, res) => {
 
     const response = await Order.findByIdAndUpdate(id, {
       orderStatus: req.body.orderStatus,
+    });
+    
+    order.cartIds.forEach((element) => {
+      Cart.findByIdAndUpdate(element, {
+        cartStatus: true,
+      });
     });
 
     return res.status(200).json(response);

@@ -2,15 +2,12 @@
   "roles": [
     {
       "name": "Customer",
-      "controller": ["Dashboard", "Order", "Comment", "Item", "Category"],
+      "controller": ["Dashboard", "Comment"],
       "permission": [
-        "read_order",
         "read_comment",
         "create_comment",
         "update_comment",
-        "delete_comment",
-        "read_item",
-        "read_category"
+        "delete_comment"
       ]
     },
     {

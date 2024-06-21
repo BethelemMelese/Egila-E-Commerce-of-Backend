@@ -115,25 +115,6 @@ const createDeliveryPerson = async (req, res) => {
         message: "Delivery Person is already exist !",
       });
     } else {
-      const generateToken = await jwt.sign(
-        {
-          time: Date(),
-          name:
-            req.body.firstName +
-            " " +
-            req.body.middleName +
-            " " +
-            req.body.lastName,
-          email: req.body.email,
-          roleId: role._id,
-          roleName: role.roleName,
-        },
-        process.env.JWT_SECRET_KEY,
-        {
-          expiresIn: 3600000,
-        }
-      );
-
       const saltRounds = 10;
       const userPassword = "D@" + req.body.username;
       const password = bcrypt.hashSync(userPassword, saltRounds);
@@ -151,7 +132,6 @@ const createDeliveryPerson = async (req, res) => {
         email: req.body.email,
         username: req.body.username,
         passwordHash: password,
-        token: generateToken,
         registrationDate: Date(),
         roleIds: role._id,
       });

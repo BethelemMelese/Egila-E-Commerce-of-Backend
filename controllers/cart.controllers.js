@@ -5,7 +5,11 @@ const createCart = async (req, res) => {
   try {
     const { itemId, quantity, uuId } = req.body;
 
-    const isExistCart = await Cart.findOne({ itemIds: itemId, uUID: uuId });
+    const isExistCart = await Cart.findOne({
+      itemIds: itemId,
+      uUID: uuId,
+      cartStatus: false,
+    });
     const item = await Item.findById(itemId);
     let cart;
     if (isExistCart != null) {
@@ -24,6 +28,7 @@ const createCart = async (req, res) => {
         uUID: uuId,
         addedDate: new Date(),
         subTotal: item.price,
+        cartStatus: false,
       });
     }
 
@@ -44,7 +49,7 @@ const createCart = async (req, res) => {
 const getCartCounter = async (req, res) => {
   try {
     const { uuId } = req.params;
-    const cart = await Cart.find({ uUID: uuId });
+    const cart = await Cart.find({ uUID: uuId, cartStatus: false });
     res.status(200).json({ counts: cart.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -57,7 +62,7 @@ const getCart = async (req, res) => {
     let totalItem = 0;
     let totalPrice = 0;
 
-    const cart = await Cart.find({ uUID: uuId })
+    const cart = await Cart.find({ uUID: uuId, cartStatus: false })
       .populate({
         path: "itemIds",
         select: "-__v",

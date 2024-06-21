@@ -69,19 +69,45 @@ const loginUser = async (req, res) => {
         .json({ message: "User is not Found, Please insert correctly !" });
     }
 
+    const role = await Role.findById(user.roleIds);
+    const generateToken = jwt.sign(
+      {
+        id: user._id,
+        time: Date(),
+        name:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        email: req.body.email,
+        roleId: role._id,
+        roleName: role.roleName,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: 3600000,
+      }
+    );
+
     const isPasswordMatch = bcrypt.compareSync(password, user.passwordHash);
 
     if (user && isPasswordMatch) {
-      const role = await Role.findById(user.roleIds);
       const userPermissions = new permissions().getPermissionsByRoleName(
         role.roleName
       );
       const controllers = new permissions().getControllerByRoleName(
         role.roleName
       );
+
+      await User.findByIdAndUpdate(user._id, {
+        token: generateToken,
+      });
+
+      const updatedUser = await User.findOne({ username });
       res.status(200).json({
         message: "Login is Successfully Done !",
-        token: user.token,
+        token: updatedUser.token,
         role: role.roleName,
         controllers: controllers,
         userPermissions: userPermissions,
@@ -141,161 +167,87 @@ const verificationToken = async (req, res, next) => {
 
 const createUser = async (req, res) => {
   try {
-    const role = await Role.findById(req.body.roleId);
-    if (role.roleName == "Admin") {
-      const isExistUser = await User.findOne({
-        $or: [
-          { username: req.body.username },
-          { email: req.body.email },
-          { phone: req.body.phone },
-        ],
+    const role = await Role.findOne({ roleName: "Customer" });
+    const isExistUser = await User.findOne({
+      $or: [
+        { username: req.body.username },
+        { email: req.body.email },
+        { phone: req.body.phone },
+      ],
+    });
+
+    if (isExistUser != null) {
+      const saltRounds = 10;
+      const password = bcrypt.hashSync(isExistUser.username, saltRounds);
+      await User.findByIdAndUpdate(isExistUser._id, {
+        passwordHash: password,
+        roleId: role._id,
       });
-      if (isExistUser != null) {
-        return res.status(500).json({
-          message: "User is already exist !",
-        });
-      } else {
-        const generateToken = await jwt.sign(
-          {
-            time: Date(),
-            name:
-              req.body.firstName +
-              " " +
-              req.body.middleName +
-              " " +
-              req.body.lastName,
-            email: req.body.email,
-            roleId: role._id,
-            roleName: role.roleName,
-          },
-          process.env.JWT_SECRET_KEY,
-          {
-            expiresIn: 3600000,
-          }
-        );
-
-        const saltRounds = 10;
-        const password = bcrypt.hashSync(req.body.password, saltRounds);
-        const user = await User.create({
-          firstName: req.body.firstName,
-          middleName: req.body.middleName,
-          lastName: req.body.lastName,
-          fullName:
-            req.body.firstName +
-            " " +
-            req.body.middleName +
-            " " +
-            req.body.lastName,
-          phone: req.body.phone,
-          email: req.body.email,
-          username: req.body.username,
-          passwordHash: password,
-          token: generateToken,
-          registrationDate: Date(),
-          roleIds: req.body.roleId,
-        });
-
-        const admin = await Admin.create({
-          address: req.body.address,
-          userId: user._id,
-        });
-
-        res.status(200).json({
-          id: admin._id,
-          firstName: user.firstName,
-          middleName: user.middleName,
-          lastName: user.lastName,
-          fullName: user.fullName,
-          phone: user.phone,
-          email: user.email,
-          registrationDate: user.registrationDate,
-          address: admin.address,
-          roleId: role._id,
-          roleName: role.roleName,
-          userId: admin.userId,
-        });
-      }
-    } else if (role.roleName == "Customer") {
-      const isExistUser = await User.findOne({
-        $or: [
-          { username: req.body.username },
-          { email: req.body.email },
-          { phone: req.body.phone },
-        ],
+      const customer = await Customer.find({
+        userId: isExistUser._id,
       });
 
-      if (isExistUser) {
-        return res.status(500).json({
-          message: "User is already exist !",
-        });
-      } else {
-        const generateToken = await jwt.sign(
-          {
-            time: Date(),
-            name:
-              req.body.firstName +
-              " " +
-              req.body.middleName +
-              " " +
-              req.body.lastName,
-            email: req.body.email,
-            roleId: role._id,
-            roleName: role.roleName,
-          },
-          process.env.JWT_SECRET_KEY,
-          {
-            expiresIn: 3600000,
-          }
-        );
+      res.status(200).json({
+        id: customer._id,
+        firstName: isExistUser.firstName,
+        middleName: isExistUser.middleName,
+        lastName: isExistUser.lastName,
+        fullName: isExistUser.fullName,
+        phone: isExistUser.phone,
+        email: isExistUser.email,
+        registrationDate: isExistUser.registrationDate,
+        address: customer.address,
+        subCity: customer.subCity,
+        town: customer.town,
+        roleId: role._id,
+        roleName: role.roleName,
+        userId: customer.userId,
+      });
+    } else {
+      const saltRounds = 10;
+      const password = bcrypt.hashSync(req.body.password, saltRounds);
+      const user = await User.create({
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        fullName:
+          req.body.firstName +
+          " " +
+          req.body.middleName +
+          " " +
+          req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+        username: req.body.username,
+        passwordHash: password,
+        registrationDate: Date(),
+        roleIds: role._id,
+      });
 
-        const saltRounds = 10;
-        const password = bcrypt.hashSync(req.body.password, saltRounds);
-        const user = await User.create({
-          firstName: req.body.firstName,
-          middleName: req.body.middleName,
-          lastName: req.body.lastName,
-          fullName:
-            req.body.firstName +
-            " " +
-            req.body.middleName +
-            " " +
-            req.body.lastName,
-          phone: req.body.phone,
-          email: req.body.email,
-          username: req.body.username,
-          passwordHash: password,
-          token: generateToken,
-          registrationDate: Date(),
-          roleIds: req.body.roleId,
-        });
+      const customer = await Customer.create({
+        address: req.body.address,
+        subCity: req.body.subCity,
+        town: req.body.town,
+        userId: user._id,
+      });
 
-        const customer = await Customer.create({
-          address: req.body.address,
-          subCity: req.body.subCity,
-          town: req.body.town,
-          userId: user._id,
-        });
-
-        res.status(200).json({
-          id: customer._id,
-          firstName: user.firstName,
-          middleName: user.middleName,
-          lastName: user.lastName,
-          fullName: user.fullName,
-          phone: user.phone,
-          email: user.email,
-          registrationDate: user.registrationDate,
-          address: customer.address,
-          subCity: customer.subCity,
-          town: customer.town,
-          roleId: role._id,
-          roleName: role.roleName,
-          userId: customer.userId,
-        });
-      }
+      res.status(200).json({
+        id: customer._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        registrationDate: user.registrationDate,
+        address: customer.address,
+        subCity: customer.subCity,
+        town: customer.town,
+        roleId: role._id,
+        roleName: role.roleName,
+        userId: customer.userId,
+      });
     }
-    const user = await User.create(req.body);
-    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -304,6 +256,7 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
+
     const user = await User.findByIdAndUpdate(id, req.body);
 
     if (!user) {

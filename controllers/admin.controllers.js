@@ -97,27 +97,8 @@ const createAdmin = async (req, res) => {
         message: "Admin is already exist !",
       });
     } else {
-      const generateToken = await jwt.sign(
-        {
-          time: Date(),
-          name:
-            req.body.firstName +
-            " " +
-            req.body.middleName +
-            " " +
-            req.body.lastName,
-          email: req.body.email,
-          roleId: role._id,
-          roleName: role.roleName,
-        },
-        process.env.JWT_SECRET_KEY,
-        {
-          expiresIn: 3600000,
-        }
-      );
-
       const saltRounds = 10;
-      const userPassword = "A@" + req.body.username;
+      const userPassword = "Aa1@" + req.body.username;
       const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,
@@ -133,7 +114,6 @@ const createAdmin = async (req, res) => {
         email: req.body.email,
         username: req.body.username,
         passwordHash: password,
-        token: generateToken,
         registrationDate: Date(),
         roleIds: role._id,
       });

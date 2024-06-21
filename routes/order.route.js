@@ -36,8 +36,8 @@ router.put(
 router.put(
   "/orderStatus/:id",
   verificationToken,
-  rbacMiddleware.checkRole("Sales Person"),
-  rbacMiddleware.checkPermission("Sales Person", "update_order"),
+  rbacMiddleware.checkRole("Delivery Person"),
+  rbacMiddleware.checkPermission("Delivery Person", "update_order"),
   updateOrderStatus
 );
 router.get(
@@ -51,7 +51,7 @@ router.delete(
   "/:id",
   verificationToken,
   rbacMiddleware.checkRole("Sales Person"),
-  rbacMiddleware.checkPermission("Admin", "read_order"),
+  rbacMiddleware.checkPermission("Sales Person", "read_order"),
   deleteOrder
 );
 
