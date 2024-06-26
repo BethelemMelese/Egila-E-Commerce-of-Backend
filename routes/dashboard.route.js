@@ -22,7 +22,7 @@ router.get("/recentOrder", verificationToken, getRecentOrder);
 router.get("/salesList", verificationToken, getSalesList);
 router.get("/currentCategories", verificationToken, getCurrentCategory);
 router.get("/currentItems", verificationToken, getCurrentItem);
-router.get("/currentOrder", verificationToken, getCurrentCustomerOrder);
+router.get("/currentOrder/:uuId", verificationToken, getCurrentCustomerOrder);
 router.get("/currentNewArrival", verificationToken, getCurrentNewArrivalItems);
 
 

@@ -51,6 +51,7 @@ const createOrder = async (req, res) => {
           town: req.body.town,
           userId: response._id,
         }).then((secondResponse) => {
+          Cart.findByIdAndUpdate({ uUID: req.body.uuId }, secondResponse._id);
           Order.create({
             totalAmount: totalAmount,
             orderOwner:
@@ -123,13 +124,13 @@ const getOrder = async (req, res) => {
             orderOwner: { $regex: search, $options: "i" },
             orderStatus: { $regex: search, $options: "i" },
             shoppingAddress: { $regex: search, $options: "i" },
-            shoppingAddress: { $regex: search, $options: "i" },
           })
             .populate({
               path: "customerIds",
               select: "-__v",
             })
             .select("-__v");
+
           const response = order.map((value) => {
             return {
               id: value._id,
@@ -146,9 +147,9 @@ const getOrder = async (req, res) => {
             };
           });
           res.status(200).json(response);
-        }else if(autoData.roleName == "Customer"){
-          const user=await User.findOne({email:autoData.email});
-          const customer= await Customer.findOne({userId:user._id});
+        } else if (autoData.roleName == "Customer") {
+          const user = await User.findOne({ email: autoData.email });
+          const customer = await Customer.findOne({ userId: user._id });
           order = await Order.find({ customerIds: customer._id })
             .populate({
               path: "customerIds",
@@ -175,11 +176,11 @@ const getOrder = async (req, res) => {
               isAssign: value.deliveryPersonId == null ? false : true,
             };
           });
-        }
-         else {
-          const user = await User.findOne({ id: autoData.id });
+
+          res.status(200).json(response);
+        } else {
           const deliveries = await Deliveries.findOne({
-            userId: user._id,
+            userId: autoData.id,
           });
           order = await Order.find({ deliveryPersonId: deliveries._id })
             .populate({
@@ -240,6 +241,21 @@ const assignDeliveryPerson = async (req, res) => {
   }
 };
 
+const getDeliveryPerson = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const delivery = await Deliveries.findById(id);
+    const user = await User.findOne({ _id: delivery.userId });
+
+    res.status(200).json({
+      fullName: user.fullName,
+      phone: user.phone,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -255,12 +271,14 @@ const updateOrderStatus = async (req, res) => {
     const response = await Order.findByIdAndUpdate(id, {
       orderStatus: req.body.orderStatus,
     });
-    
-    order.cartIds.forEach((element) => {
-      Cart.findByIdAndUpdate(element, {
-        cartStatus: true,
+
+    if (req.body.orderStatus == "Accepted") {
+      order.cartIds.forEach((element) => {
+        Cart.findByIdAndUpdate(element, {
+          cartStatus: true,
+        });
       });
-    });
+    }
 
     return res.status(200).json(response);
   } catch (error) {
@@ -287,6 +305,7 @@ module.exports = {
   createOrder,
   assignDeliveryPerson,
   updateOrderStatus,
+  getDeliveryPerson,
   getOrder,
   deleteOrder,
 };

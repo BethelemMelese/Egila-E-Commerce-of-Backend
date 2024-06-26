@@ -135,31 +135,27 @@ const getCurrentItem = async (req, res) => {
 
 const getCurrentCustomerOrder = async (req, res) => {
   try {
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    const { uuId } = req.params;
     let cartList;
-    jwt.verify(req.token, jwtSecretKey, async (err, autoData) => {
-      const user = await User.findOne({ email: autoData.email });
-      const customer = await Customer.findOne({ userId: user._id });
-      const cart = await Cart.find({
-        customerIds: customer._id,
-        cartStatus: false,
-      }).populate({
-        path: "itemIds",
-        select: "-__v",
-      });
-      cartList = cart.map((value) => {
-        return {
-          id: value._id,
-          itemName: value.itemIds[0].itemName,
-          itemDescription: value.itemIds[0].itemDescription,
-          itemImage: value.itemIds[0].itemImage,
-          price: `${value.itemIds[0].price} (ETB)`,
-          quantity: value.quantity,
-          brand: value.itemIds[0].brand,
-          subTotal: `${value.subTotal} (ETB)`,
-        };
-      });
+
+    const cart = await Cart.find({ uUID: uuId, cartStatus: false }).populate({
+      path: "itemIds",
+      select: "-__v",
     });
+    cartList = cart.map((value) => {
+      return {
+        id: value._id,
+        itemName: value.itemIds[0].itemName,
+        itemDescription: value.itemIds[0].itemDescription,
+        itemImage: value.itemIds[0].itemImage,
+        price: `${value.itemIds[0].price} (ETB)`,
+        quantity: value.quantity,
+        brand: value.itemIds[0].brand,
+        subTotal: `${value.subTotal} (ETB)`,
+        cartStatus:value.cartStatus
+      };
+    });
+
     res.status(200).json(cartList);
   } catch (error) {
     res.status(500).json({ message: error.message });

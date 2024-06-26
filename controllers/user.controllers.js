@@ -178,10 +178,11 @@ const createUser = async (req, res) => {
 
     if (isExistUser != null) {
       const saltRounds = 10;
-      const password = bcrypt.hashSync(isExistUser.username, saltRounds);
+      const password = bcrypt.hashSync(req.body.password, saltRounds);
       await User.findByIdAndUpdate(isExistUser._id, {
         passwordHash: password,
-        roleId: role._id,
+        username:req.body.username,
+        roleIds: role._id,
       });
       const customer = await Customer.find({
         userId: isExistUser._id,

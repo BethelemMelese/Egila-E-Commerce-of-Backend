@@ -116,7 +116,7 @@ const createDeliveryPerson = async (req, res) => {
       });
     } else {
       const saltRounds = 10;
-      const userPassword = "D@" + req.body.username;
+      const userPassword = "Dd3@" + req.body.username;
       const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,
@@ -217,13 +217,13 @@ const deleteDeliveryPerson = async (req, res) => {
     const deliveryPerson = await DeliveryPerson.findById(id);
 
     if (!deliveryPerson) {
-      return res.status(404).json({ message: "DeliveryPerson is not Found !" });
+      return res.status(404).json({ message: "Deliveries is not Found !" });
     }
 
     await User.findByIdAndDelete(deliveryPerson.userId);
     await DeliveryPerson.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "DeliveryPerson Deleted Successfully !" });
+    res.status(200).json({ message: "Deliveries Deleted Successfully !" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

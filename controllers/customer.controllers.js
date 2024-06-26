@@ -11,7 +11,6 @@ dotenv.config();
 const getCustomers = async (req, res) => {
   try {
     const search = req.query.search || "";
-
     const customer = await Customer.find({
       $or: [
         { address: { $regex: search, $options: "i" } },

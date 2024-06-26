@@ -14,9 +14,10 @@ const deliveryPerson = require("./routes/deliveryPerson.route.js");
 const cart = require("./routes/cart.route.js");
 const order = require("./routes/order.route.js");
 const payment = require("./routes/payment.route.js");
-const dashbaord = require("./routes/dashbaord.route.js");
+const dashboard = require("./routes/dashboard.route.js");
 const comment = require("./routes/comment.route.js");
 const report=require("./routes/report.route.js");
+const issuesReport=require("./routes/deliveryIssuesReport.route.js");
 const app = express();
 
 app.use(express.json());
@@ -51,9 +52,11 @@ app.use("/api/deliveryPersons", deliveryPerson);
 app.use("/api/carts", cart);
 app.use("/api/orders", order);
 app.use("/api/payments", payment);
-app.use("/api/dashboard", dashbaord);
+app.use("/api/dashboard", dashboard);
 app.use("/api/comments", comment);
 app.use("/api/reports",report);
+app.use("/api/issuesReports",issuesReport);
+
 app.get("/", (req, res) => {
   res.send("The Server Side running Successfully");
 });

@@ -97,7 +97,7 @@ const createSalesPerson = async (req, res) => {
       });
     } else {
       const saltRounds = 10;
-      const userPassword = "S@" + req.body.username;
+      const userPassword = "Ss2@" + req.body.username;
       const password = bcrypt.hashSync(userPassword, saltRounds);
       const user = await User.create({
         firstName: req.body.firstName,

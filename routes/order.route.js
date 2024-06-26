@@ -6,6 +6,7 @@ const {
   createOrder,
   assignDeliveryPerson,
   updateOrderStatus,
+  getDeliveryPerson,
   getOrder,
   deleteOrder,
 } = require("../controllers/order.controller.js");
@@ -33,6 +34,7 @@ router.put(
   rbacMiddleware.checkPermission("Sales Person", "update_order"),
   assignDeliveryPerson
 );
+
 router.put(
   "/orderStatus/:id",
   verificationToken,
@@ -40,6 +42,15 @@ router.put(
   rbacMiddleware.checkPermission("Delivery Person", "update_order"),
   updateOrderStatus
 );
+
+router.get(
+  "/deliveryName/:id",
+  verificationToken,
+  rbacMiddleware.checkRole("Sales Person"),
+  rbacMiddleware.checkPermission("Sales Person", "read_order"),
+  getDeliveryPerson
+);
+
 router.get(
   "/",
   verificationToken,
@@ -47,6 +58,7 @@ router.get(
   rbacMiddleware.checkPermission("Sales Person", "read_order"),
   getOrder
 );
+
 router.delete(
   "/:id",
   verificationToken,
