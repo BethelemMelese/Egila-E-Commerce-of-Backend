@@ -11,9 +11,9 @@ const getItems = async (req, res) => {
     const search = req.query.search || "";
 
     const item = await Item.find({
-      itemName: { $regex: search, $options: "i" },
-      brand: { $regex: search, $options: "i" },
-      itemDescription: { $regex: search, $options: "i" },
+      itemName: { $regex: search},
+      brand: { $regex: search},
+      itemDescription: { $regex: search},
     }).populate("categoryId");
     const response = item.map((value) => {
       return {
@@ -40,9 +40,9 @@ const getNewArrivalItems = async (req, res) => {
     let filteredItems;
     if (search) {
       filteredItems = await Item.find({
-        itemName: { $regex: search, $options: "i" },
-        brand: { $regex: search, $options: "i" },
-        itemDescription: { $regex: search, $options: "i" },
+        itemName: { $regex: search},
+        brand: { $regex: search},
+        itemDescription: { $regex: search},
       })
         .sort({ createdAt: -1 })
         .limit(4);
@@ -68,22 +68,27 @@ const getNewArrivalItems = async (req, res) => {
   }
 };
 
-const getItemById = async (req, res) => {
+const getItemBySearch = async (req, res) => {
   try {
-    const { id } = req.params;
-    const item = await Item.findById(id).populate("categoryId");
+    const search = req.query.search || "";
 
-    res.status(200).json({
-      id: item._id,
-      itemName: item.itemName,
-      itemDescription: item.itemDescription,
-      quantity: item.quantity,
-      price: item.price,
-      brand: item.brand,
-      itemImage: item.itemImage,
-      categoryId: item.categoryId._id,
-      categoryName: item.categoryId.categoryName,
+    const item = await Item.find({
+      itemName: { $regex: search },
+    }).populate("categoryId");
+    const response = item.map((value) => {
+      return {
+        id: value._id,
+        itemName: value.itemName,
+        itemDescription: value.itemDescription,
+        quantity: value.quantity,
+        price: value.price,
+        brand: value.brand,
+        itemImage: value.itemImage,
+        categoryId: value.categoryId._id,
+        categoryName: value.categoryId.categoryName,
+      };
     });
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -123,9 +128,9 @@ const filterItemByCategoryIdAndSearch = async (req, res) => {
 
     if (searchTerm != "") {
       filteredItems = await Item.find({
-        itemName: { $regex: searchTerm, $options: "i" },
-        brand: { $regex: searchTerm, $options: "i" },
-        itemDescription: { $regex: searchTerm, $options: "i" },
+        itemName: { $regex: searchTerm},
+        brand: { $regex: searchTerm},
+        itemDescription: { $regex: searchTerm},
       })
         .sort({ createdAt: -1 })
         .limit(4);
@@ -330,7 +335,7 @@ const downloadFile = async (req, res) => {
 module.exports = {
   getItems,
   getNewArrivalItems,
-  getItemById,
+  getItemBySearch,
   getItemByCategoryId,
   createItem,
   updateItem,

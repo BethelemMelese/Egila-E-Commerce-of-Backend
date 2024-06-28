@@ -121,9 +121,9 @@ const getOrder = async (req, res) => {
       else {
         if (autoData.roleName == "Sales Person") {
           order = await Order.find({
-            orderOwner: { $regex: search, $options: "i" },
-            orderStatus: { $regex: search, $options: "i" },
-            shoppingAddress: { $regex: search, $options: "i" },
+            orderOwner: { $regex: search},
+            orderStatus: { $regex: search},
+            shoppingAddress: { $regex: search},
           })
             .populate({
               path: "customerIds",

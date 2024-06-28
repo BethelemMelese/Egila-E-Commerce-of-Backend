@@ -11,7 +11,7 @@ const getItemCategorys = async (req, res) => {
     const search = req.query.search || "";
 
     const itemCategory = await ItemCategory.find({
-      categoryName: { $regex: search, $options: "i" },
+      categoryName: { $regex: search},
     });
     const response = itemCategory.map((value) => {
       return {
@@ -32,7 +32,7 @@ const getItemCategoryNames = async (req, res) => {
     const search = req.query.search || "";
 
     const itemCategory = await ItemCategory.find({
-      categoryName: { $regex: search, $options: "i" },
+      categoryName: { $regex: search},
     });
     const response = itemCategory.map((value) => {
       return {

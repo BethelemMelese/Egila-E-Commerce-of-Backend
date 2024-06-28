@@ -13,15 +13,15 @@ const getCustomers = async (req, res) => {
     const search = req.query.search || "";
     const customer = await Customer.find({
       $or: [
-        { address: { $regex: search, $options: "i" } },
-        { subCity: { $regex: search, $options: "i" } },
+        { address: { $regex: search} },
+        { subCity: { $regex: search} },
       ],
     })
       .populate({
         path: "userId",
         $or: [
-          { fullName: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
+          { fullName: { $regex: search} },
+          { email: { $regex: search} },
         ],
         select: "-__v", // Exclude the __v field
       })

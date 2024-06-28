@@ -5,7 +5,7 @@ const router = express.Router();
 const {
   createItem,
   deleteItem,
-  getItemById,
+  getItemBySearch,
   getItemByCategoryId,
   getItems,
   getNewArrivalItems,
@@ -34,6 +34,10 @@ router.get(
   rbacMiddleware.checkRole("Sales Person"),
   rbacMiddleware.checkPermission("Sales Person", "read_item"),
   getItems
+);
+router.get(
+  "/search/",
+  getItemBySearch
 );
 router.get("/newArrival/", getNewArrivalItems);
 router.get(

@@ -4,7 +4,7 @@ const getComments = async (req, res) => {
   try {
     const search = req.query.search || "";
     const comments = await Comment.find({
-      name: { $regex: search, $options: "i" },
+      name: { $regex: search},
     });
     const response = comments.map((value) => {
       return {

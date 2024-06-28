@@ -4,7 +4,7 @@ const searchAndFilterRole = async (req, res) => {
   try {
     const search = req.query.search || "";
     const roles = await Role.find({
-      roleName: { $regex: search, $options: "i" },
+      roleName: { $regex: search},
     });
     const response = roles.map((value) => {
       return {
@@ -24,7 +24,7 @@ const getRoles = async (req, res) => {
   try {
     const search = req.query.search || "";
     const roles = await Role.find({
-      roleName: { $regex: search, $options: "i" },
+      roleName: { $regex: search},
     }).populate("userIds");
     const response = roles.map((value) => {
       return {
