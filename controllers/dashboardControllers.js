@@ -138,7 +138,10 @@ const getCurrentCustomerOrder = async (req, res) => {
     const { uuId } = req.params;
     let cartList;
 
-    const cart = await Cart.find({ uUID: uuId, cartStatus: false }).populate({
+    const cart = await Cart.find({
+      uUID: uuId,
+      cartStatus: "Ongoing",
+    }).populate({
       path: "itemIds",
       select: "-__v",
     });
@@ -152,7 +155,7 @@ const getCurrentCustomerOrder = async (req, res) => {
         quantity: value.quantity,
         brand: value.itemIds[0].brand,
         subTotal: `${value.subTotal} (ETB)`,
-        cartStatus:value.cartStatus
+        cartStatus: value.cartStatus,
       };
     });
 

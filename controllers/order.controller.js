@@ -56,13 +56,6 @@ const createOrder = async (req, res) => {
           town: req.body.town,
           userId: response._id,
         }).then((secondResponse) => {
-          Cart.findByIdAndUpdate(
-            { uUID: req.body.uuId },
-            {
-              uUID: req.body.uuId,
-              cartStatus: "Ongoing",
-            }
-          );
           Order.create({
             totalAmount: totalAmount,
             orderOwner:
@@ -91,13 +84,10 @@ const createOrder = async (req, res) => {
       });
     } else {
       const customer = await Customer.findOne({ userId: user._id });
-      await Cart.findByIdAndUpdate(
-        { uUID: req.body.uuId },
-        {
-          uUID: req.body.uuId,
-          cartStatus: "Ongoing",
-        }
-      );
+      const cart = await Cart.findOne({ uUID: req.body.uuId });
+      await Cart.findByIdAndUpdate(cart._id, {
+        cartStatus: "Ongoing",
+      });
       await Order.create({
         orderOwner:
           req.body.firstName +
@@ -311,8 +301,8 @@ const updateOrderStatus = async (req, res) => {
         });
       });
     } else {
-      order.cartIds.forEach((element) => {
-        Cart.findByIdAndUpdate(element, {
+      order.cartIds.forEach(async (element) => {
+        await Cart.findByIdAndUpdate(element, {
           cartStatus: req.body.orderStatus,
         });
       });

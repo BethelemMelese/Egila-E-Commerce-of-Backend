@@ -58,6 +58,12 @@ const getCartCounter = async (req, res) => {
         {
           cartStatus: "Ongoing",
         },
+        {
+          cartStatus: "Denied",
+        },
+        {
+          cartStatus: "Has Issue",
+        },
       ],
     });
     res.status(200).json({ counts: cart.length });
@@ -80,6 +86,12 @@ const getCart = async (req, res) => {
         },
         {
           cartStatus: "Ongoing",
+        },
+        {
+          cartStatus: "Denied",
+        },
+        {
+          cartStatus: "Has Issue",
         },
       ],
     })
