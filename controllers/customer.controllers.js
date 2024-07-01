@@ -12,18 +12,10 @@ const getCustomers = async (req, res) => {
   try {
     const search = req.query.search || "";
     const customer = await Customer.find({
-      $or: [
-        { address: { $regex: search} },
-        { subCity: { $regex: search} },
-      ],
+      $or: [{ address: { $regex: search } }, { subCity: { $regex: search } }],
     })
       .populate({
         path: "userId",
-        $or: [
-          { fullName: { $regex: search} },
-          { email: { $regex: search} },
-        ],
-        select: "-__v", // Exclude the __v field
       })
       .select("-__v");
 
@@ -34,7 +26,7 @@ const getCustomers = async (req, res) => {
         firstName: value.userId[0].firstName,
         middleName: value.userId[0].middleName,
         lastName: value.userId[0].lastName,
-        username:value.userId[0].username,
+        username: value.userId[0].username,
         phone: value.userId[0].phone,
         email: value.userId[0].email,
         email: value.userId[0].email,
@@ -68,7 +60,7 @@ const getCustomerById = async (req, res) => {
       middleName: user.middleName,
       lastName: user.lastName,
       fullName: user.fullName,
-      username:user.username,
+      username: user.username,
       phone: user.phone,
       email: user.email,
       token: user.token,

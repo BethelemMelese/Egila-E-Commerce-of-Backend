@@ -19,9 +19,8 @@ const CartSchema = mongoose.Schema(
       required: true,
     },
     cartStatus: {
-      type: Boolean,
+      type: String,
       required: false,
-      default:false,
     },
     itemIds: [
       {

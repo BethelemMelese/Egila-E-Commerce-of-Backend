@@ -8,13 +8,11 @@ dotenv.config();
 exports.checkPermission = (role, permission) => {
   return (req, res, next) => {
     let jwtSecretKey = process.env.JWT_SECRET_KEY;
-
     jwt.verify(req.token, jwtSecretKey, (err, autoData) => {
       if (err) res.status(403).json({ message: "Permission not allowed" });
       else {
-        const userRole = autoData ? autoData.roleName : "anonymous";
         const userPermissions = new Permissions().getPermissionsByRoleName(
-          userRole
+          autoData.roleName
         );
         if (userPermissions.includes(permission)) {
           return next();
@@ -31,7 +29,6 @@ exports.checkPermission = (role, permission) => {
 exports.checkRole = (role) => {
   return (req, res, next) => {
     let jwtSecretKey = process.env.JWT_SECRET_KEY;
-
     jwt.verify(req.token, jwtSecretKey, (err, autoData) => {
       if (err) res.status(403).json({ message: "Role not allowed" });
       else {

@@ -14,8 +14,8 @@ router.get(
   "/",
   verificationToken,
   rbacMiddleware.checkRole("Sales Person"),
-  rbacMiddleware.checkRole("Admin"),
   rbacMiddleware.checkPermission("Sales Person", "read_customer"),
+  rbacMiddleware.checkRole("Admin"),
   rbacMiddleware.checkPermission("Admin", "read_customer"),
   getCustomers
 );

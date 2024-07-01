@@ -14,11 +14,16 @@ dotenv.config();
 
 const createOrder = async (req, res) => {
   try {
-    const user = await User.findOne({ phone: req.body.phone });
+    const user = await User.findOne({
+      phone: req.body.phone,
+    });
     let array = [];
     let totalAmount = 0;
 
-    const cartIds = await Cart.find({ uUID: req.body.uuId });
+    const cartIds = await Cart.find({
+      uUID: req.body.uuId,
+      cartStatus: "Pending",
+    });
     cartIds.forEach((element) => {
       array.push(element.id);
     });
@@ -51,7 +56,13 @@ const createOrder = async (req, res) => {
           town: req.body.town,
           userId: response._id,
         }).then((secondResponse) => {
-          Cart.findByIdAndUpdate({ uUID: req.body.uuId }, secondResponse._id);
+          Cart.findByIdAndUpdate(
+            { uUID: req.body.uuId },
+            {
+              uUID: req.body.uuId,
+              cartStatus: "Ongoing",
+            }
+          );
           Order.create({
             totalAmount: totalAmount,
             orderOwner:
@@ -80,6 +91,13 @@ const createOrder = async (req, res) => {
       });
     } else {
       const customer = await Customer.findOne({ userId: user._id });
+      await Cart.findByIdAndUpdate(
+        { uUID: req.body.uuId },
+        {
+          uUID: req.body.uuId,
+          cartStatus: "Ongoing",
+        }
+      );
       await Order.create({
         orderOwner:
           req.body.firstName +
@@ -121,9 +139,9 @@ const getOrder = async (req, res) => {
       else {
         if (autoData.roleName == "Sales Person") {
           order = await Order.find({
-            orderOwner: { $regex: search},
-            orderStatus: { $regex: search},
-            shoppingAddress: { $regex: search},
+            orderOwner: { $regex: search },
+            orderStatus: { $regex: search },
+            shoppingAddress: { $regex: search },
           })
             .populate({
               path: "customerIds",
@@ -230,6 +248,12 @@ const assignDeliveryPerson = async (req, res) => {
       });
     }
 
+    order.cartIds.forEach(async (element) => {
+      const cart = await Cart.findByIdAndUpdate(element, {
+        cartStatus: "Ongoing",
+      });
+    });
+
     const response = await Order.findByIdAndUpdate(id, {
       deliveryPersonId: req.body.deliveryPersonId,
       orderStatus: "Ongoing",
@@ -273,9 +297,23 @@ const updateOrderStatus = async (req, res) => {
     });
 
     if (req.body.orderStatus == "Accepted") {
+      order.cartIds.forEach(async (element) => {
+        await Cart.findByIdAndUpdate(element, {
+          cartStatus: req.body.orderStatus,
+        });
+      });
+
+      order.cartIds.forEach(async (element) => {
+        const cart = await Cart.findById(element);
+        const item = await Item.findById(cart.itemIds);
+        await Item.findByIdAndUpdate(cart.itemIds, {
+          quantity: item.quantity - cart.quantity,
+        });
+      });
+    } else {
       order.cartIds.forEach((element) => {
         Cart.findByIdAndUpdate(element, {
-          cartStatus: true,
+          cartStatus: req.body.orderStatus,
         });
       });
     }

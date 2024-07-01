@@ -32,6 +32,8 @@ router.get(
   verificationToken,
   rbacMiddleware.checkRole("Sales Person"),
   rbacMiddleware.checkPermission("Sales Person", "read_category"),
+  rbacMiddleware.checkRole("Delivery Person"),
+  rbacMiddleware.checkPermission("Delivery Person", "read_item"),
   getItemCategorys
 );
 router.get(
