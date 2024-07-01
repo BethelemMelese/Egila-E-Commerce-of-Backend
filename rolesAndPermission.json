@@ -43,7 +43,7 @@
       "controller": [
         "Dashboard",
         "Customer",
-        "Deliveries",
+        "Delivery Person",
         "Item",
         "Category",
         "Order",
