@@ -1,0 +1,90 @@
+{
+  "roles": [
+    {
+      "name": "Customer",
+      "controller": ["Dashboard", "Comment"],
+      "permission": [
+        "read_comment",
+        "create_comment",
+        "update_comment",
+        "delete_comment"
+      ]
+    },
+    {
+      "name": "Admin",
+      "controller": [
+        "Dashboard",
+        "Admin",
+        "Role",
+        "Sales Person",
+        "Report",
+        "Comment"
+      ],
+      "permission": [
+        "create_admin",
+        "update_admin",
+        "read_admin",
+        "delete_admin",
+        "create_role",
+        "read_role",
+        "update_role",
+        "delete_role",
+        "create_salesPerson",
+        "read_salesPerson",
+        "update_salesPerson",
+        "delete_salesPerson",
+        "read_report",
+        "read_comment",
+        "delete_comment"
+      ]
+    },
+    {
+      "name": "Sales Person",
+      "controller": [
+        "Dashboard",
+        "Customer",
+        "Delivery Person",
+        "Item",
+        "Category",
+        "Order",
+        "Comment",
+        "Report"
+      ],
+      "permission": [
+        "read_customer",
+        "read_deliveries",
+        "update_deliveries",
+        "delete_deliveries",
+        "create_deliveries",
+        "read_item",
+        "create_item",
+        "update_item",
+        "delete_item",
+        "read_category",
+        "create_category",
+        "update_category",
+        "delete_category",
+        "read_order",
+        "read_cart",
+        "update_order",
+        "read_issuesReport",
+        "update_issuesReport",
+        "read_comment",
+        "read_report"
+      ]
+    },
+    {
+      "name": "Delivery Person",
+      "controller": ["Dashboard", "Item", "Category", "Order"],
+      "permission": [
+        "read_customer",
+        "read_item",
+        "read_category",
+        "read_order",
+        "read_cart",
+        "update_order",
+        "create_issueReport"
+      ]
+    }
+  ]
+}

@@ -1,17 +1,41 @@
 const express = require("express");
+const cors = require("cors");
 const dotenv = require("dotenv");
-const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
 const userRoutes = require("./routes/user.route.js");
 const itemCategoryRoutes = require("./routes/itemCategory.route.js");
 const item = require("./routes/item.route.js");
-const userProfile=require("./routes/userProfile.route.js");
+const role = require("./routes/role.route.js");
+const customer = require("./routes/customer.route.js");
+const admin = require("./routes/admin.route.js");
+const salesPerson = require("./routes/salesPerson.route.js");
+const deliveryPerson = require("./routes/deliveryPerson.route.js");
+const cart = require("./routes/cart.route.js");
+const order = require("./routes/order.route.js");
+const payment = require("./routes/payment.route.js");
+const dashboard = require("./routes/dashboard.route.js");
+const comment = require("./routes/comment.route.js");
+const report=require("./routes/report.route.js");
+const issuesReport=require("./routes/deliveryIssuesReport.route.js");
 const app = express();
 
-//middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors()); // Allowing incoming request from any IP
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, 'Content-Type' : 'multipart/form-data' ,* "
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+  );
+  next();
+});
 
 // configuration file
 dotenv.config();
@@ -20,8 +44,22 @@ dotenv.config();
 app.use("/api/users", userRoutes);
 app.use("/api/itemCategorys", itemCategoryRoutes);
 app.use("/api/items", item);
-app.use("/api/userProfiles", userProfile);
+app.use("/api/roles", role);
+app.use("/api/customers", customer);
+app.use("/api/admins", admin);
+app.use("/api/salesPersons", salesPerson);
+app.use("/api/deliveryPersons", deliveryPerson);
+app.use("/api/carts", cart);
+app.use("/api/orders", order);
+app.use("/api/payments", payment);
+app.use("/api/dashboard", dashboard);
+app.use("/api/comments", comment);
+app.use("/api/reports",report);
+app.use("/api/issuesReports",issuesReport);
 
+app.get("/", (req, res) => {
+  res.send("The Server Side running Successfully");
+});
 
 // Connection with Mongodb Database and run the server
 let PORT = process.env.PORT || 5000;
@@ -34,45 +72,7 @@ mongoose
       console.log(`Server is running on port ${PORT} ..`);
     });
     console.log("Connected to database!");
-
   })
   .catch((error) => {
     console.log("Connection failed!", error);
   });
-
-// the below are a await function for difference end point with their conditions
-app.get("/", (req, res) => {
-  res.send("Hello from Node Api the server is included");
-});
-
-// this below function are help for JWT token authentication and verification
-app.post("/api/generateToken", async (req, res) => {
-  try {
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
-    let data = {
-      time: Date(),
-      userId: 12,
-    };
-
-    const token = await jwt.sign(data, jwtSecretKey);
-    res.send(token);
-  } catch (error) {
-    res.status(500), json({ message: error.message });
-  }
-});
-
-app.get("/api/validateToken", (req, res) => {
-  try {
-    let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
-    const token = req.header(tokenHeaderKey);
-    const verified = jwt.verify(token, jwtSecretKey);
-    if (verified) {
-      return res.status(200).send("Successfully Verified !");
-    } else {
-      return res.status(401).send("Something is Wrong !");
-    }
-  } catch (error) {
-    res.status(401).json({ message: error.message });
-  }
-});
