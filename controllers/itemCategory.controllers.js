@@ -165,7 +165,9 @@ const downloadFile = async (req, res) => {
   try {
     const { filePath } = req.params;
     const path = process.env.FILE_PATH;
+    console.log("path...",path);
     const response = path + filePath;
+    console.log("response...",response);
     res.sendFile(response);
   } catch (error) {
     return res.status(500).json({ message: error.message });
