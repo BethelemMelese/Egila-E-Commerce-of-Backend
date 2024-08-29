@@ -22,7 +22,10 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors()); // Allowing incoming request from any IP
+
+var whitelist = ["http://localhost:3000", "https://egila-gadgets.netlify.app/"];
+var corsOptions = { origin: whitelist, credentials: true };
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
