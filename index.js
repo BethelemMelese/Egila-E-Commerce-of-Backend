@@ -16,16 +16,32 @@ const order = require("./routes/order.route.js");
 const payment = require("./routes/payment.route.js");
 const dashboard = require("./routes/dashboard.route.js");
 const comment = require("./routes/comment.route.js");
-const report=require("./routes/report.route.js");
-const issuesReport=require("./routes/deliveryIssuesReport.route.js");
+const report = require("./routes/report.route.js");
+const issuesReport = require("./routes/deliveryIssuesReport.route.js");
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 var whitelist = ["http://localhost:3000", "https://egila-gadgets.netlify.app/"];
-var corsOptions = { origin: whitelist, credentials: true };
-app.use(cors(corsOptions));
+const allowedOrigins = ["https://egila-gadgets.netlify.app/"];
+var corsOptions = {
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(
+  cors({
+    origin: "*", // Replace with your domain or use '*' to allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify the methods you want to allow
+    allowedHeaders: ["Content-Type", "Authorization"], // Specify the headers you want to allow
+    credentials: true, // If you need to allow cookies or other credentials
+    optionsSuccessStatus: 200,
+  })
+);
+
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -57,8 +73,8 @@ app.use("/api/orders", order);
 app.use("/api/payments", payment);
 app.use("/api/dashboard", dashboard);
 app.use("/api/comments", comment);
-app.use("/api/reports",report);
-app.use("/api/issuesReports",issuesReport);
+app.use("/api/reports", report);
+app.use("/api/issuesReports", issuesReport);
 
 app.get("/", (req, res) => {
   res.send("The Server Side running Successfully");
