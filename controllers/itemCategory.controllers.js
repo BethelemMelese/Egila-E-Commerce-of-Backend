@@ -75,6 +75,7 @@ const createItemCategory = async (req, res) => {
         message: "Category is already exist, please insert new category !",
       });
     } else {
+      console.log("req.file.path",req.file.path);
       const formData = {
         categoryName: req.body.categoryName,
         categoryDescription: req.body.categoryDescription,
