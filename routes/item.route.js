@@ -15,19 +15,20 @@ const {
 } = require("../controllers/item.controllers");
 const { verificationToken } = require("../controllers/user.controllers.js");
 const rbacMiddleware = require("../middleware/rbacMIddleware.js");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary.js");
 
-// Set up Multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, __dirname + "/uploads");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "item-images",
+    format: async (req, file) => "jpg" || "png" || "jpeg",
+    public_id: (req, file) => file.originalname,
   },
 });
 
-// Initialize Multer with the storage configuration
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
+
 router.get(
   "/",
   verificationToken,
@@ -37,15 +38,9 @@ router.get(
   rbacMiddleware.checkPermission("Delivery Person", "read_item"),
   getItems
 );
-router.get(
-  "/search/",
-  getItemBySearch
-);
+router.get("/search/", getItemBySearch);
 router.get("/newArrival/", getNewArrivalItems);
-router.get(
-  "/categoryId/:categoryId",
-  getItemByCategoryId
-);
+router.get("/categoryId/:categoryId", getItemByCategoryId);
 router.get("/categorySearch/", filterItemByCategoryIdAndSearch);
 router.post(
   "/",

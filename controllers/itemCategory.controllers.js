@@ -78,7 +78,7 @@ const createItemCategory = async (req, res) => {
       const formData = {
         categoryName: req.body.categoryName,
         categoryDescription: req.body.categoryDescription,
-        categoryImage: req.file.filename,
+        categoryImage: req.file.path,
       };
       const itemCategory = await ItemCategory.create(formData);
 
@@ -100,7 +100,7 @@ const uploadCategoryImage = async (req, res) => {
     const formData = {
       categoryName: req.body.categoryName,
       categoryDescription: req.body.categoryDescription,
-      categoryImage: req.file.filename,
+      categoryImage: req.file.path,
     };
     const itemCategory = await ItemCategory.create(formData);
     res.status(200).json(itemCategory);
@@ -126,7 +126,7 @@ const updateItemCategory = async (req, res) => {
       await ItemCategory.findByIdAndUpdate(id, {
         categoryName: req.body.categoryName,
         categoryDescription: req.body.categoryDescription,
-        categoryImage: req.file.filename,
+        categoryImage: req.file.path,
       });
     }
 

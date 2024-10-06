@@ -175,7 +175,7 @@ const createItem = async (req, res) => {
         brand: req.body.brand,
         price: req.body.price,
         categoryId: req.body.categoryId,
-        itemImage: req.file.filename,
+        itemImage: req.file.path,
       };
 
       const item = await Item.create(formDate);
@@ -231,7 +231,7 @@ const updateItem = async (req, res) => {
           brand: req.body.brand,
           price: req.body.price,
           categoryId: req.body.categoryId,
-          itemImage: req.file.filename,
+          itemImage: req.file.path,
         });
         res.status(200).json({
           id: item._id,
@@ -272,7 +272,7 @@ const updateItem = async (req, res) => {
           brand: req.body.brand,
           price: req.body.price,
           categoryId: req.body.categoryId,
-          itemImage: req.file.filename,
+          itemImage: req.file.path,
         });
         const itemCategory = await ItemCategory.findByIdAndUpdate(
           { _id: req.body.categoryId },
