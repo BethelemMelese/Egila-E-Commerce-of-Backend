@@ -24,8 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 var whitelist = ["http://localhost:3000", "https://egila-gadgets.netlify.app/"];
-// const allowedOrigins = ["https://egila-gadgets.netlify.app/"];
-const allowedOrigins = ["http://localhost:3000/"];
+const allowedOrigins = ["https://egila-gadgets.netlify.app/"];
+// const allowedOrigins = ["http://localhost:3000/"];
 
 var corsOptions = {
   origin: allowedOrigins,
